@@ -19,7 +19,7 @@ https://vgtrkregion-reg.cdnvideo.ru/vgtrk/0/kultura-hd/index.m3u8
 
 # 4. НТВ
 #EXTINF:-1 tvg-id="ntv" tvg-logo="http://epg.one/img2/ntv.png" group-title="Основные", НТВ
-http://91.239.143.57:8080/NTV/index.m3u8
+https://cdn.ntv.ru/ntv0/playlist.m3u8
 
 # 5. Пятый канал
 #EXTINF:-1 tvg-id="5kanal-ru" tvg-logo="http://epg.one/img2/5kanal-ru.png" group-title="Основные", Пятый канал
