@@ -7,7 +7,7 @@ from datetime import datetime
 # Внешние источники
 RU_SOURCE_FILE = "sources/ru.txt"
 LT_SOURCE_FILE = "sources/lt.txt"
-THIRD_SOURCE_FILE = "sources/third.txt"  # новый источник
+THIRD_SOURCE_FILE = "sources/third.txt"
 
 # Порядок каналов
 CHANNEL_ORDER = [
@@ -28,13 +28,21 @@ CHANNEL_ORDER = [
     "Power Hit Radio",
 ]
 
-# Радио-каналы (убираем tvg-id)
+# Радио-каналы
 RADIO_CHANNELS = ["M-1", "Power Hit Radio"]
 
 # EPG remap
 EPG_REMAP = {
     "DelfiTV.lt@SD": "delfi-tv",
     "LietuvosRytasTV.lt@SD": "lietuvos-ryto-televizija",
+}
+
+# tvg-id для СТС и Домашний
+FIXED_TVG_IDS = {
+    "СТС": "sts",
+    "СТС HD": "sts",
+    "Домашний": "domashniy",
+    "Домашний HD": "domashniy",
 }
 
 # Фильтры
@@ -46,24 +54,13 @@ EXCLUDE_PATTERNS = [
     r"UHD", r"4K",
 ]
 
-# tvg-id для СТС и Домашний
-FIXED_TVG_IDS = {
-    "СТС": "sts",
-    "СТС HD": "sts",
-    "Домашний": "domashniy",
-    "Домашний HD": "domashniy",
-}
 
-def load_source_url(path):
-    with open(path, encoding="utf-8") as f:
-        return f.read().strip()
-
-def download(url):
-    return requests.get(url).text
-
+# -----------------------------
+#  ПАРСЕР (исправленный)
+# -----------------------------
 def parse_m3u(text):
     """
-    Корректный парсер для формата:
+    Поддерживает:
     #EXTINF
     #EXTVLCOPT (0..N)
     URL
@@ -80,9 +77,9 @@ def parse_m3u(text):
         if not line:
             continue
 
-        # Начало нового канала
+        # Начало канала
         if line.startswith("#EXTINF"):
-            # Если предыдущая запись была полной — сохраняем
+            # если предыдущий канал был завершён — сохраняем
             if current_extinf and current_url:
                 result.append(
                     (current_extinf,
@@ -95,13 +92,13 @@ def parse_m3u(text):
             current_url = None
             continue
 
-        # Параметры VLC
+        # VLC параметры
         if line.startswith("#EXTVLCOPT"):
             if current_extinf:
                 current_vlcopts.append(line)
             continue
 
-        # URL (завершение записи)
+        # URL
         if re.match(r"^(https?|rtmp|rtsp)://", line):
             if current_extinf:
                 current_url = line
@@ -118,7 +115,15 @@ def parse_m3u(text):
     return result
 
 
+# -----------------------------
+#  ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+# -----------------------------
+def load_source_url(path):
+    with open(path, encoding="utf-8") as f:
+        return f.read().strip()
 
+def download(url):
+    return requests.get(url).text
 
 def extract_name(extinf):
     if "," not in extinf:
@@ -183,7 +188,7 @@ def fix_group_and_tvg(extinf, channel):
     # Группа
     extinf = re.sub(r'group-title="[^"]+"', 'group-title="Развлекательные"', extinf)
 
-    # tvg-id для СТС и Домашний
+    # tvg-id
     for key, tvgid in FIXED_TVG_IDS.items():
         if normalize(key) == normalize(channel):
             if 'tvg-id="' in extinf:
@@ -213,6 +218,10 @@ def write_log(log_lines, changed):
             f.write(line + "\n")
         f.write("="*60 + "\n")
 
+
+# -----------------------------
+#  ОСНОВНАЯ ЛОГИКА
+# -----------------------------
 def build():
     log = []
 
@@ -279,6 +288,7 @@ def build():
 
     print("\n".join(log))
     print("playlist.m3u updated")
+
 
 if __name__ == "__main__":
     build()
