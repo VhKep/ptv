@@ -5,7 +5,7 @@ import os
 SRC_RU = "https://raw.githubusercontent.com/smolnp/IPTVru/gh-pages/IPTVstable.m3u8"
 SRC_LT = "https://raw.githubusercontent.com/iptv-org/iptv/refs/heads/master/streams/lt.m3u"
 
-# Каналы в нужном порядке
+# Порядок каналов
 CHANNEL_ORDER = [
     "Первый канал",
     "Россия 1",
@@ -33,7 +33,7 @@ EXCLUDE_PATTERNS = [
     r"Premium", r"World", r"Europe",
     r"Baltic",
     r"UHD", r"4K",
-    r"24$"
+    r"24$"  # исключить Мир 24
 ]
 
 def download(url):
@@ -53,13 +53,18 @@ def parse_m3u(text):
             i += 1
     return result
 
-def extract_tvg_name(extinf):
-    m = re.search(r'tvg-name="([^"]+)"', extinf)
-    return m.group(1) if m else None
+def extract_name(extinf):
+    """Название канала после запятой"""
+    if "," not in extinf:
+        return None
+    name = extinf.split(",", 1)[1].strip()
+    # убираем скобки, например (Калининград)
+    name = re.sub(r"\(.*?\)", "", name).strip()
+    return name
 
-def extract_tvg_id(extinf):
-    m = re.search(r'tvg-id="([^"]+)"', extinf)
-    return m.group(1) if m else None
+def normalize(name):
+    """Нормализация для сравнения"""
+    return re.sub(r"\s+", " ", name.lower()).strip()
 
 def is_excluded(name):
     for pattern in EXCLUDE_PATTERNS:
@@ -75,26 +80,32 @@ def load_existing_playlist():
     entries = parse_m3u(text)
     result = {}
     for extinf, url in entries:
-        name = extract_tvg_name(extinf)
+        name = extract_name(extinf)
         if name:
-            result[name] = (extinf, url)
+            result[normalize(name)] = (extinf, url)
     return result
 
 def find_best_variant(entries, target):
-    hd_name = f"{target} HD"
+    target_norm = normalize(target)
+    hd_norm = normalize(target + " HD")
 
     hd = None
     sd = None
 
     for extinf, url in entries:
-        name = extract_tvg_name(extinf)
-        if not name or is_excluded(name):
+        name = extract_name(extinf)
+        if not name:
             continue
 
-        if name.lower() == hd_name.lower():
+        name_norm = normalize(name)
+
+        if is_excluded(name):
+            continue
+
+        if name_norm == hd_norm:
             hd = (extinf, url)
 
-        if name.lower() == target.lower():
+        if name_norm == target_norm:
             sd = (extinf, url)
 
     return hd or sd
@@ -116,10 +127,12 @@ def build():
     final = ["#EXTM3U"]
 
     for channel in CHANNEL_ORDER:
-        # 1. fallback из текущего плейлиста
-        old_extinf, old_url = existing.get(channel, (None, None))
+        target_norm = normalize(channel)
 
-        # 2. ищем в источниках
+        # fallback
+        old_extinf, old_url = existing.get(target_norm, (None, None))
+
+        # ищем в источниках
         if channel in ["Delfi TV", "Lietuvos Rytas TV"]:
             new = find_best_variant(lt_entries, channel)
         else:
@@ -129,11 +142,9 @@ def build():
             extinf, url = new
             extinf = remap_epg(extinf)
         else:
-            # fallback если нет нового
             extinf, url = old_extinf, old_url
 
         if not extinf or not url:
-            # если нет ни старого, ни нового — пропускаем
             continue
 
         final.append(extinf)
