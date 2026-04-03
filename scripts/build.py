@@ -2,7 +2,6 @@ import requests
 import re
 import os
 import hashlib
-import base64
 from datetime import datetime
 
 # Источники
@@ -51,14 +50,13 @@ EXCLUDE_PATTERNS = [
 ]
 
 # -----------------------------
-#  СКАЧИВАНИЕ TV ЧЕРЕЗ GITHUB API
+#  СКАЧИВАНИЕ TV ЧЕРЕЗ RAW С ПРАВИЛЬНЫМ ACCEPT
 # -----------------------------
-def download_github_file(user, repo, branch, path):
-    api = f"https://api.github.com/repos/{user}/{repo}/contents/{path}?ref={branch}"
-    r = requests.get(api)
+def download_dimonovich_tv():
+    url = "https://raw.githubusercontent.com/Dimonovich/TV/refs/heads/Dimonovich/FREE/TV"
+    r = requests.get(url, headers={"Accept": "application/vnd.github.raw"})
     r.raise_for_status()
-    data = r.json()
-    return base64.b64decode(data["content"]).decode("utf-8")
+    return r.text
 
 
 # -----------------------------
@@ -222,7 +220,7 @@ def build():
     lt_entries = parse_m3u(requests.get(lt_url).text)
 
     # 🔥 ВСЕГДА АКТУАЛЬНЫЙ TV ИЗ DIMONOVICH
-    third_text = download_github_file("Dimonovich", "TV", "Dimonovich", "FREE/TV")
+    third_text = download_dimonovich_tv()
     third_entries = parse_m3u(third_text)
 
     existing = load_existing_playlist()
