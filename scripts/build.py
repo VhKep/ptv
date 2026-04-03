@@ -53,7 +53,7 @@ EXCLUDE_PATTERNS = [
 #  СКАЧИВАНИЕ TV ЧЕРЕЗ RAW С ПРАВИЛЬНЫМ ACCEPT
 # -----------------------------
 def download_dimonovich_tv():
-    url = "https://raw.githubusercontent.com/Dimonovich/TV/refs/heads/Dimonovich/FREE/TV"
+    url = "https://raw.githubusercontent.com/Dimonovich/TV/Dimonovich/FREE/TV"
     r = requests.get(url, headers={"Accept": "application/vnd.github.raw"})
     r.raise_for_status()
     return r.text
