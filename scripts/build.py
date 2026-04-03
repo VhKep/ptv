@@ -2,12 +2,12 @@ import requests
 import re
 import os
 import hashlib
+import base64
 from datetime import datetime
 
-# Внешние источники
+# Источники
 RU_SOURCE_FILE = "sources/ru.txt"
 LT_SOURCE_FILE = "sources/lt.txt"
-THIRD_SOURCE_FILE = "sources/third.txt"
 
 # Порядок каналов
 CHANNEL_ORDER = [
@@ -28,16 +28,13 @@ CHANNEL_ORDER = [
     "Power Hit Radio",
 ]
 
-# Радио-каналы
 RADIO_CHANNELS = ["M-1", "Power Hit Radio"]
 
-# EPG remap
 EPG_REMAP = {
     "DelfiTV.lt@SD": "delfi-tv",
     "LietuvosRytasTV.lt@SD": "lietuvos-ryto-televizija",
 }
 
-# tvg-id для СТС и Домашний
 FIXED_TVG_IDS = {
     "СТС": "sts",
     "СТС HD": "sts",
@@ -45,7 +42,6 @@ FIXED_TVG_IDS = {
     "Домашний HD": "domashniy",
 }
 
-# Фильтры
 EXCLUDE_PATTERNS = [
     r"\+1", r"\+2", r"\+4", r"\+7",
     r"International", r"Int",
@@ -54,17 +50,21 @@ EXCLUDE_PATTERNS = [
     r"UHD", r"4K",
 ]
 
+# -----------------------------
+#  СКАЧИВАНИЕ TV ЧЕРЕЗ GITHUB API
+# -----------------------------
+def download_github_file(user, repo, branch, path):
+    api = f"https://api.github.com/repos/{user}/{repo}/contents/{path}?ref={branch}"
+    r = requests.get(api)
+    r.raise_for_status()
+    data = r.json()
+    return base64.b64decode(data["content"]).decode("utf-8")
+
 
 # -----------------------------
-#  ПАРСЕР (исправленный)
+#  ПАРСЕР M3U
 # -----------------------------
 def parse_m3u(text):
-    """
-    Поддерживает:
-    #EXTINF
-    #EXTVLCOPT (0..N)
-    URL
-    """
     lines = text.splitlines()
     result = []
 
@@ -77,28 +77,23 @@ def parse_m3u(text):
         if not line:
             continue
 
-        # Начало канала
         if line.startswith("#EXTINF"):
-            # если предыдущий канал был завершён — сохраняем
             if current_extinf and current_url:
                 result.append(
                     (current_extinf,
                      "\n".join(current_vlcopts) if current_vlcopts else None,
                      current_url)
                 )
-
             current_extinf = line
             current_vlcopts = []
             current_url = None
             continue
 
-        # VLC параметры
         if line.startswith("#EXTVLCOPT"):
             if current_extinf:
                 current_vlcopts.append(line)
             continue
 
-        # URL
         if re.match(r"^(https?|rtmp|rtsp)://", line):
             if current_extinf:
                 current_url = line
@@ -121,9 +116,6 @@ def parse_m3u(text):
 def load_source_url(path):
     with open(path, encoding="utf-8") as f:
         return f.read().strip()
-
-def download(url):
-    return requests.get(url).text
 
 def extract_name(extinf):
     if "," not in extinf:
@@ -185,10 +177,8 @@ def remap_epg(extinf):
     return extinf
 
 def fix_group_and_tvg(extinf, channel):
-    # Группа
     extinf = re.sub(r'group-title="[^"]+"', 'group-title="Развлекательные"', extinf)
 
-    # tvg-id
     for key, tvgid in FIXED_TVG_IDS.items():
         if normalize(key) == normalize(channel):
             if 'tvg-id="' in extinf:
@@ -227,11 +217,13 @@ def build():
 
     ru_url = load_source_url(RU_SOURCE_FILE)
     lt_url = load_source_url(LT_SOURCE_FILE)
-    third_url = load_source_url(THIRD_SOURCE_FILE)
 
-    ru_entries = parse_m3u(download(ru_url))
-    lt_entries = parse_m3u(download(lt_url))
-    third_entries = parse_m3u(download(third_url))
+    ru_entries = parse_m3u(requests.get(ru_url).text)
+    lt_entries = parse_m3u(requests.get(lt_url).text)
+
+    # 🔥 ВСЕГДА АКТУАЛЬНЫЙ TV ИЗ DIMONOVICH
+    third_text = download_github_file("Dimonovich", "TV", "Dimonovich", "FREE/TV")
+    third_entries = parse_m3u(third_text)
 
     existing = load_existing_playlist()
     old_hash = file_hash("playlist.m3u")
@@ -243,7 +235,6 @@ def build():
 
         old_extinf, old_vlcopt, old_url = existing.get(target_norm, (None, None, None))
 
-        # Приоритет источников
         if channel in ["СТС", "Домашний"]:
             new = find_best_variant(third_entries, channel)
         elif channel in ["Delfi TV", "Lietuvos Rytas TV", "M-1", "Power Hit Radio"]:
