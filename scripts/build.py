@@ -1,4 +1,3 @@
-import base64
 import requests
 import re
 import os
@@ -51,7 +50,7 @@ EXCLUDE_PATTERNS = [
 ]
 
 # -----------------------------
-#  СКАЧИВАНИЕ TV ЧЕРЕЗ RAW С ПРАВИЛЬНЫМ ACCEPT
+#  СКАЧИВАНИЕ TV ЧЕРЕЗ RAW.GITHACK (РАБОТАЕТ ВСЕГДА)
 # -----------------------------
 def download_dimonovich_tv():
     url = "https://raw.githack.com/Dimonovich/TV/Dimonovich/FREE/TV"
