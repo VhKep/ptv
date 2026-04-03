@@ -54,17 +54,10 @@ EXCLUDE_PATTERNS = [
 #  СКАЧИВАНИЕ TV ЧЕРЕЗ RAW С ПРАВИЛЬНЫМ ACCEPT
 # -----------------------------
 def download_dimonovich_tv():
-    meta = requests.get(
-        "https://api.github.com/repos/Dimonovich/TV/contents/FREE/TV?ref=Dimonovich"
-    ).json()
-
-    sha = meta["sha"]
-
-    blob = requests.get(
-        f"https://api.github.com/repos/Dimonovich/TV/git/blobs/{sha}"
-    ).json()
-
-    return base64.b64decode(blob["content"]).decode("utf-8")
+    url = "https://raw.githack.com/Dimonovich/TV/Dimonovich/FREE/TV"
+    r = requests.get(url)
+    r.raise_for_status()
+    return r.text
 
 
 # -----------------------------
