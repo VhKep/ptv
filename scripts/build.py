@@ -75,33 +75,48 @@ def parse_m3u(text):
     current_vlcopts = []
     current_url = None
 
-    for line in lines:
-        line = line.strip()
+    for raw_line in lines:
+        line = raw_line.strip()
         if not line:
             continue
 
+        # Начало нового канала
         if line.startswith("#EXTINF"):
-            # если предыдущая запись была неполной — сбрасываем
+            # Если предыдущая запись была полной — сохраняем
             if current_extinf and current_url:
-                result.append((current_extinf, "\n".join(current_vlcopts) if current_vlcopts else None, current_url))
+                result.append(
+                    (current_extinf,
+                     "\n".join(current_vlcopts) if current_vlcopts else None,
+                     current_url)
+                )
 
             current_extinf = line
             current_vlcopts = []
             current_url = None
+            continue
 
-        elif line.startswith("#EXTVLCOPT"):
+        # Параметры VLC
+        if line.startswith("#EXTVLCOPT"):
             if current_extinf:
                 current_vlcopts.append(line)
+            continue
 
-        elif re.match(r"^(https?|rtmp|rtsp)://", line):
+        # URL (завершение записи)
+        if re.match(r"^(https?|rtmp|rtsp)://", line):
             if current_extinf:
                 current_url = line
-                result.append((current_extinf, "\n".join(current_vlcopts) if current_vlcopts else None, current_url))
+                result.append(
+                    (current_extinf,
+                     "\n".join(current_vlcopts) if current_vlcopts else None,
+                     current_url)
+                )
                 current_extinf = None
                 current_vlcopts = []
                 current_url = None
+            continue
 
     return result
+
 
 
 
