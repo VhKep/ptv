@@ -33,7 +33,7 @@ EXCLUDE_PATTERNS = [
     r"Premium", r"World", r"Europe",
     r"Baltic",
     r"UHD", r"4K",
-    r"24$"  # исключить Мир 24
+    # r"24$"  # УБРАНО, чтобы не резать "Запад 24"
 ]
 
 def download(url):
@@ -67,6 +67,11 @@ def normalize(name):
     return re.sub(r"\s+", " ", name.lower()).strip()
 
 def is_excluded(name):
+    # точечно исключим "Мир 24", если нужно
+    norm = normalize(name)
+    if norm == "мир 24":
+        return True
+
     for pattern in EXCLUDE_PATTERNS:
         if re.search(pattern, name, re.IGNORECASE):
             return True
