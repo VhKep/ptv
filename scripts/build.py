@@ -2,6 +2,7 @@ import requests
 import re
 import os
 import hashlib
+from datetime import datetime
 
 # Файлы с внешними ссылками
 RU_SOURCE_FILE = "sources/ru.txt"
@@ -135,6 +136,16 @@ def file_hash(path):
     with open(path, "rb") as f:
         return hashlib.md5(f.read()).hexdigest()
 
+def write_log(log_lines, changed):
+    with open("update.log", "a", encoding="utf-8") as f:
+        f.write("\n" + "="*60 + "\n")
+        f.write(f"Обновление: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        f.write(f"Изменения: {'ДА' if changed else 'НЕТ'}\n")
+        f.write("-"*60 + "\n")
+        for line in log_lines:
+            f.write(line + "\n")
+        f.write("="*60 + "\n")
+
 def build():
     log = []
 
@@ -183,12 +194,17 @@ def build():
     new_content = "\n".join(final)
     new_hash = hashlib.md5(new_content.encode("utf-8")).hexdigest()
 
-    if new_hash == old_hash:
+    changed = new_hash != old_hash
+
+    if not changed:
         print("Нет изменений — файл не обновлён.")
+        write_log(log, changed=False)
         return
 
     with open("playlist.m3u", "w", encoding="utf-8") as f:
         f.write(new_content)
+
+    write_log(log, changed=True)
 
     print("\n".join(log))
     print("playlist.m3u updated")
