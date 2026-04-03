@@ -4,9 +4,10 @@ import os
 import hashlib
 from datetime import datetime
 
-# Файлы с внешними ссылками
+# Внешние источники
 RU_SOURCE_FILE = "sources/ru.txt"
 LT_SOURCE_FILE = "sources/lt.txt"
+THIRD_SOURCE_FILE = "sources/third.txt"  # новый источник
 
 # Порядок каналов
 CHANNEL_ORDER = [
@@ -30,13 +31,13 @@ CHANNEL_ORDER = [
 # Радио-каналы (убираем tvg-id)
 RADIO_CHANNELS = ["M-1", "Power Hit Radio"]
 
-# Замена EPG-ID
+# EPG remap
 EPG_REMAP = {
     "DelfiTV.lt@SD": "delfi-tv",
     "LietuvosRytasTV.lt@SD": "lietuvos-ryto-televizija",
 }
 
-# Фильтры для исключения лишних вариантов
+# Фильтры
 EXCLUDE_PATTERNS = [
     r"\+1", r"\+2", r"\+4", r"\+7",
     r"International", r"Int",
@@ -44,6 +45,14 @@ EXCLUDE_PATTERNS = [
     r"Baltic",
     r"UHD", r"4K",
 ]
+
+# tvg-id для СТС и Домашний
+FIXED_TVG_IDS = {
+    "СТС": "sts",
+    "СТС HD": "sts",
+    "Домашний": "domashniy",
+    "Домашний HD": "domashniy",
+}
 
 def load_source_url(path):
     with open(path, encoding="utf-8") as f:
@@ -53,17 +62,35 @@ def download(url):
     return requests.get(url).text
 
 def parse_m3u(text):
+    """
+    Поддержка формата:
+    #EXTINF
+    #EXTVLCOPT (опционально)
+    URL
+    """
     lines = text.splitlines()
     result = []
     i = 0
+
     while i < len(lines):
         if lines[i].startswith("#EXTINF"):
             extinf = lines[i]
-            url = lines[i+1] if i+1 < len(lines) else ""
-            result.append((extinf, url))
-            i += 2
+            vlcopt = None
+            url = ""
+
+            # Следующая строка может быть #EXTVLCOPT
+            if i + 1 < len(lines) and lines[i+1].startswith("#EXTVLCOPT"):
+                vlcopt = lines[i+1]
+                url = lines[i+2] if i+2 < len(lines) else ""
+                i += 3
+            else:
+                url = lines[i+1] if i+1 < len(lines) else ""
+                i += 2
+
+            result.append((extinf, vlcopt, url))
         else:
             i += 1
+
     return result
 
 def extract_name(extinf):
@@ -89,10 +116,10 @@ def load_existing_playlist():
         text = f.read()
     entries = parse_m3u(text)
     result = {}
-    for extinf, url in entries:
+    for extinf, vlcopt, url in entries:
         name = extract_name(extinf)
         if name:
-            result[normalize(name)] = (extinf, url)
+            result[normalize(name)] = (extinf, vlcopt, url)
     return result
 
 def find_best_variant(entries, target):
@@ -102,7 +129,7 @@ def find_best_variant(entries, target):
     hd = None
     sd = None
 
-    for extinf, url in entries:
+    for extinf, vlcopt, url in entries:
         name = extract_name(extinf)
         if not name:
             continue
@@ -113,16 +140,29 @@ def find_best_variant(entries, target):
             continue
 
         if name_norm == hd_norm:
-            hd = (extinf, url)
+            hd = (extinf, vlcopt, url)
 
         if name_norm == target_norm:
-            sd = (extinf, url)
+            sd = (extinf, vlcopt, url)
 
     return hd or sd
 
 def remap_epg(extinf):
     for old, new in EPG_REMAP.items():
         extinf = re.sub(rf'tvg-id="{old}"', f'tvg-id="{new}"', extinf)
+    return extinf
+
+def fix_group_and_tvg(extinf, channel):
+    # Группа
+    extinf = re.sub(r'group-title="[^"]+"', 'group-title="Развлекательные"', extinf)
+
+    # tvg-id для СТС и Домашний
+    for key, tvgid in FIXED_TVG_IDS.items():
+        if normalize(key) == normalize(channel):
+            if 'tvg-id="' in extinf:
+                extinf = re.sub(r'tvg-id="[^"]+"', f'tvg-id="{tvgid}"', extinf)
+            else:
+                extinf = extinf.replace(",", f' tvg-id="{tvgid}",')
     return extinf
 
 def strip_epg_for_radio(extinf, channel):
@@ -151,15 +191,13 @@ def build():
 
     ru_url = load_source_url(RU_SOURCE_FILE)
     lt_url = load_source_url(LT_SOURCE_FILE)
+    third_url = load_source_url(THIRD_SOURCE_FILE)
 
-    ru_raw = download(ru_url)
-    lt_raw = download(lt_url)
-
-    ru_entries = parse_m3u(ru_raw)
-    lt_entries = parse_m3u(lt_raw)
+    ru_entries = parse_m3u(download(ru_url))
+    lt_entries = parse_m3u(download(lt_url))
+    third_entries = parse_m3u(download(third_url))
 
     existing = load_existing_playlist()
-
     old_hash = file_hash("playlist.m3u")
 
     final = ["#EXTM3U"]
@@ -167,19 +205,23 @@ def build():
     for channel in CHANNEL_ORDER:
         target_norm = normalize(channel)
 
-        old_extinf, old_url = existing.get(target_norm, (None, None))
+        old_extinf, old_vlcopt, old_url = existing.get(target_norm, (None, None, None))
 
-        if channel in ["Delfi TV", "Lietuvos Rytas TV", "M-1", "Power Hit Radio"]:
+        # Приоритет источников
+        if channel in ["СТС", "Домашний"]:
+            new = find_best_variant(third_entries, channel)
+        elif channel in ["Delfi TV", "Lietuvos Rytas TV", "M-1", "Power Hit Radio"]:
             new = find_best_variant(lt_entries, channel)
         else:
             new = find_best_variant(ru_entries, channel)
 
         if new:
-            extinf, url = new
+            extinf, vlcopt, url = new
             extinf = remap_epg(extinf)
+            extinf = fix_group_and_tvg(extinf, channel)
             log.append(f"[UPDATE] {channel}: обновлена ссылка")
         else:
-            extinf, url = old_extinf, old_url
+            extinf, vlcopt, url = old_extinf, old_vlcopt, old_url
             log.append(f"[FALLBACK] {channel}: использована старая ссылка")
 
         if not extinf or not url:
@@ -189,6 +231,8 @@ def build():
         extinf = strip_epg_for_radio(extinf, channel)
 
         final.append(extinf)
+        if vlcopt:
+            final.append(vlcopt)
         final.append(url)
 
     new_content = "\n".join(final)
