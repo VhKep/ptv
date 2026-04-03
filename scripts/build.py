@@ -1,6 +1,7 @@
 import requests
 import re
 import os
+import hashlib
 
 # Файлы с внешними ссылками
 RU_SOURCE_FILE = "sources/ru.txt"
@@ -128,7 +129,15 @@ def strip_epg_for_radio(extinf, channel):
         extinf = re.sub(r'tvg-id="[^"]+"', '', extinf)
     return extinf
 
+def file_hash(path):
+    if not os.path.exists(path):
+        return None
+    with open(path, "rb") as f:
+        return hashlib.md5(f.read()).hexdigest()
+
 def build():
+    log = []
+
     ru_url = load_source_url(RU_SOURCE_FILE)
     lt_url = load_source_url(LT_SOURCE_FILE)
 
@@ -139,6 +148,8 @@ def build():
     lt_entries = parse_m3u(lt_raw)
 
     existing = load_existing_playlist()
+
+    old_hash = file_hash("playlist.m3u")
 
     final = ["#EXTM3U"]
 
@@ -155,10 +166,13 @@ def build():
         if new:
             extinf, url = new
             extinf = remap_epg(extinf)
+            log.append(f"[UPDATE] {channel}: обновлена ссылка")
         else:
             extinf, url = old_extinf, old_url
+            log.append(f"[FALLBACK] {channel}: использована старая ссылка")
 
         if not extinf or not url:
+            log.append(f"[SKIP] {channel}: нет данных")
             continue
 
         extinf = strip_epg_for_radio(extinf, channel)
@@ -166,9 +180,17 @@ def build():
         final.append(extinf)
         final.append(url)
 
-    with open("playlist.m3u", "w", encoding="utf-8") as f:
-        f.write("\n".join(final))
+    new_content = "\n".join(final)
+    new_hash = hashlib.md5(new_content.encode("utf-8")).hexdigest()
 
+    if new_hash == old_hash:
+        print("Нет изменений — файл не обновлён.")
+        return
+
+    with open("playlist.m3u", "w", encoding="utf-8") as f:
+        f.write(new_content)
+
+    print("\n".join(log))
     print("playlist.m3u updated")
 
 if __name__ == "__main__":
