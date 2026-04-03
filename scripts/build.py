@@ -63,9 +63,9 @@ def download(url):
 
 def parse_m3u(text):
     """
-    Корректный парсер:
+    Корректный парсер для формата:
     #EXTINF
-    #EXTVLCOPT (опционально, может быть несколько)
+    #EXTVLCOPT (0..N)
     URL
     """
     lines = text.splitlines()
@@ -76,8 +76,12 @@ def parse_m3u(text):
     current_url = None
 
     for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+
         if line.startswith("#EXTINF"):
-            # если предыдущая запись не завершена — сбрасываем
+            # если предыдущая запись была неполной — сбрасываем
             if current_extinf and current_url:
                 result.append((current_extinf, "\n".join(current_vlcopts) if current_vlcopts else None, current_url))
 
@@ -89,7 +93,7 @@ def parse_m3u(text):
             if current_extinf:
                 current_vlcopts.append(line)
 
-        elif line.startswith("http"):
+        elif re.match(r"^(https?|rtmp|rtsp)://", line):
             if current_extinf:
                 current_url = line
                 result.append((current_extinf, "\n".join(current_vlcopts) if current_vlcopts else None, current_url))
@@ -98,6 +102,7 @@ def parse_m3u(text):
                 current_url = None
 
     return result
+
 
 
 def extract_name(extinf):
