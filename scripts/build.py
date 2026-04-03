@@ -2,8 +2,9 @@ import requests
 import re
 import os
 
-SRC_RU = "https://raw.githubusercontent.com/smolnp/IPTVru/gh-pages/IPTVstable.m3u8"
-SRC_LT = "https://raw.githubusercontent.com/iptv-org/iptv/refs/heads/master/streams/lt.m3u"
+# Файлы с внешними ссылками
+RU_SOURCE_FILE = "sources/ru.txt"
+LT_SOURCE_FILE = "sources/lt.txt"
 
 # Порядок каналов
 CHANNEL_ORDER = [
@@ -20,21 +21,31 @@ CHANNEL_ORDER = [
     "Запад 24",
     "Delfi TV",
     "Lietuvos Rytas TV",
+    "M-1",
+    "Power Hit Radio",
 ]
 
+# Радио-каналы (убираем tvg-id)
+RADIO_CHANNELS = ["M-1", "Power Hit Radio"]
+
+# Замена EPG-ID
 EPG_REMAP = {
     "DelfiTV.lt@SD": "delfi-tv",
     "LietuvosRytasTV.lt@SD": "lietuvos-ryto-televizija",
 }
 
+# Фильтры для исключения лишних вариантов
 EXCLUDE_PATTERNS = [
     r"\+1", r"\+2", r"\+4", r"\+7",
     r"International", r"Int",
     r"Premium", r"World", r"Europe",
     r"Baltic",
     r"UHD", r"4K",
-    # r"24$"  # УБРАНО, чтобы не резать "Запад 24"
 ]
+
+def load_source_url(path):
+    with open(path, encoding="utf-8") as f:
+        return f.read().strip()
 
 def download(url):
     return requests.get(url).text
@@ -54,24 +65,16 @@ def parse_m3u(text):
     return result
 
 def extract_name(extinf):
-    """Название канала после запятой"""
     if "," not in extinf:
         return None
     name = extinf.split(",", 1)[1].strip()
-    # убираем скобки, например (Калининград)
     name = re.sub(r"\(.*?\)", "", name).strip()
     return name
 
 def normalize(name):
-    """Нормализация для сравнения"""
     return re.sub(r"\s+", " ", name.lower()).strip()
 
 def is_excluded(name):
-    # точечно исключим "Мир 24", если нужно
-    norm = normalize(name)
-    if norm == "мир 24":
-        return True
-
     for pattern in EXCLUDE_PATTERNS:
         if re.search(pattern, name, re.IGNORECASE):
             return True
@@ -120,9 +123,17 @@ def remap_epg(extinf):
         extinf = re.sub(rf'tvg-id="{old}"', f'tvg-id="{new}"', extinf)
     return extinf
 
+def strip_epg_for_radio(extinf, channel):
+    if channel in RADIO_CHANNELS:
+        extinf = re.sub(r'tvg-id="[^"]+"', '', extinf)
+    return extinf
+
 def build():
-    ru_raw = download(SRC_RU)
-    lt_raw = download(SRC_LT)
+    ru_url = load_source_url(RU_SOURCE_FILE)
+    lt_url = load_source_url(LT_SOURCE_FILE)
+
+    ru_raw = download(ru_url)
+    lt_raw = download(lt_url)
 
     ru_entries = parse_m3u(ru_raw)
     lt_entries = parse_m3u(lt_raw)
@@ -134,11 +145,9 @@ def build():
     for channel in CHANNEL_ORDER:
         target_norm = normalize(channel)
 
-        # fallback
         old_extinf, old_url = existing.get(target_norm, (None, None))
 
-        # ищем в источниках
-        if channel in ["Delfi TV", "Lietuvos Rytas TV"]:
+        if channel in ["Delfi TV", "Lietuvos Rytas TV", "M-1", "Power Hit Radio"]:
             new = find_best_variant(lt_entries, channel)
         else:
             new = find_best_variant(ru_entries, channel)
@@ -151,6 +160,8 @@ def build():
 
         if not extinf or not url:
             continue
+
+        extinf = strip_epg_for_radio(extinf, channel)
 
         final.append(extinf)
         final.append(url)
