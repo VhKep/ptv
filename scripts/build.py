@@ -63,35 +63,42 @@ def download(url):
 
 def parse_m3u(text):
     """
-    Поддержка формата:
+    Корректный парсер:
     #EXTINF
-    #EXTVLCOPT (опционально)
+    #EXTVLCOPT (опционально, может быть несколько)
     URL
     """
     lines = text.splitlines()
     result = []
-    i = 0
 
-    while i < len(lines):
-        if lines[i].startswith("#EXTINF"):
-            extinf = lines[i]
-            vlcopt = None
-            url = ""
+    current_extinf = None
+    current_vlcopts = []
+    current_url = None
 
-            # Следующая строка может быть #EXTVLCOPT
-            if i + 1 < len(lines) and lines[i+1].startswith("#EXTVLCOPT"):
-                vlcopt = lines[i+1]
-                url = lines[i+2] if i+2 < len(lines) else ""
-                i += 3
-            else:
-                url = lines[i+1] if i+1 < len(lines) else ""
-                i += 2
+    for line in lines:
+        if line.startswith("#EXTINF"):
+            # если предыдущая запись не завершена — сбрасываем
+            if current_extinf and current_url:
+                result.append((current_extinf, "\n".join(current_vlcopts) if current_vlcopts else None, current_url))
 
-            result.append((extinf, vlcopt, url))
-        else:
-            i += 1
+            current_extinf = line
+            current_vlcopts = []
+            current_url = None
+
+        elif line.startswith("#EXTVLCOPT"):
+            if current_extinf:
+                current_vlcopts.append(line)
+
+        elif line.startswith("http"):
+            if current_extinf:
+                current_url = line
+                result.append((current_extinf, "\n".join(current_vlcopts) if current_vlcopts else None, current_url))
+                current_extinf = None
+                current_vlcopts = []
+                current_url = None
 
     return result
+
 
 def extract_name(extinf):
     if "," not in extinf:
