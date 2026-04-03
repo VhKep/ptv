@@ -9,6 +9,9 @@ jobs:
   update:
     runs-on: ubuntu-latest
 
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
     steps:
       - uses: actions/checkout@v4
 
@@ -27,6 +30,6 @@ jobs:
         run: |
           git config --global user.name "AutoUpdater"
           git config --global user.email "actions@github.com"
-          git add playlist.m3u
+          git add playlist.m3u update.log
           git commit -m "Auto update playlist" || echo "No changes"
           git push
