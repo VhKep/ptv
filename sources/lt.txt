@@ -1,1 +1,0 @@
-https://raw.githubusercontent.com/iptv-org/iptv/refs/heads/master/streams/lt.m3u
