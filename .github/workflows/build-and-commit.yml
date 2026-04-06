@@ -27,7 +27,7 @@ jobs:
 
       - name: Run build script
         run: |
-          python scripts/build_playlist.py --channels sources/requestedIPTV --sources sources/sourcesplaylists --temp playlistTEMP.m3u --out custom_playlist.m3u
+          python scripts/build_playlist.py --channels sources/requestedIPTV --sources sources/sourcesplaylists --temp playlist.m3u --out custom_playlist.m3u
 
       - name: Show diff
         run: git --no-pager diff --name-only || true
