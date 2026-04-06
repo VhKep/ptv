@@ -5,7 +5,7 @@ scripts/build_playlist.py
 Собирает custom_playlist.m3u на основе:
  - sources/requestedIPTV
  - sources/sourcesplaylists
- - опционально playlistTEMP.m3u
+ - опционально playlist.m3u
 Выход: custom_playlist.m3u (по умолчанию в корне репозитория).
 """
 
@@ -299,7 +299,7 @@ def main():
     p = argparse.ArgumentParser(description="Build custom IPTV playlist from sources")
     p.add_argument("--channels", "-c", default="sources/requestedIPTV", help="Файл со списком каналов")
     p.add_argument("--sources", "-s", default="sources/sourcesplaylists", help="Файл со списком источников")
-    p.add_argument("--temp", "-t", default="playlistTEMP.m3u", help="Локальный временный плейлист (опционально)")
+    p.add_argument("--temp", "-t", default="playlist.m3u", help="Локальный временный плейлист (опционально)")
     p.add_argument("--out", "-o", default="custom_playlist.m3u", help="Выходной m3u файл")
     args = p.parse_args()
 
