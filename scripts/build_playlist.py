@@ -165,22 +165,51 @@ def build(channels_spec, sources_list, extra_local=None, out_path="custom_playli
 
         if found:
             block = found['full']
-            # заменить/добавить tvg-id
-            if ch['desired_tvg']:
-                if re.search(r'tvg-id\s*=\s*".*?"', block, flags=re.IGNORECASE):
-                    block = re.sub(r'(tvg-id\s*=\s*").*?(")', r'\1' + ch['desired_tvg'] + r'\2', block, flags=re.IGNORECASE)
-                else:
-                    block = re.sub(r'(#EXTINF:[^\n]*?)\s*(,)', r'\1 tvg-id="' + ch['desired_tvg'] + r'"\2', block, count=1, flags=re.IGNORECASE)
+            # заменить/вставить tvg-id в extinf (безопасно, через callable)
+if ch['desired_tvg']:
+    # заменить существующий tvg-id или добавить
+    if re.search(r'tvg-id\s*=\s*".*?"', block, flags=re.IGNORECASE):
+        block = re.sub(
+            r'(tvg-id\s*=\s*")(.*?)(")',
+            lambda m: m.group(1) + ch['desired_tvg'] + m.group(3),
+            block,
+            flags=re.IGNORECASE
+        )
+    else:
+        # вставить после #EXTINF:-1
+        block = re.sub(
+            r'(#EXTINF:[^\n]*?)\s*(,)',
+            lambda m: m.group(1) + ' tvg-id="' + ch['desired_tvg'] + '"' + m.group(2),
+            block,
+            count=1,
+            flags=re.IGNORECASE
+        )
+
             # normalize group-title
             if re.search(r'group-title\s*=\s*".*?"', block, flags=re.IGNORECASE):
                 g = re.search(r'group-title\s*=\s*"(.*?)"', block, flags=re.IGNORECASE).group(1)
-                block = re.sub(r'(group-title\s*=\s*").*?(")', r'\1' + normalize_group_title(g) + r'\2', block, flags=re.IGNORECASE)
-            else:
+                newg = normalize_group_title(g)
+                # безопасная замена через callable
+                block = re.sub(
+                    r'(group-title\s*=\s*")(.*?)(")',
+                    lambda m: m.group(1) + newg + m.group(3),
+                    block,
+                    flags=re.IGNORECASE
+                )
+             else:
                 block = re.sub(r'(#EXTINF:[^\n]*?)\s*(,)', r'\1 group-title="Разное"\2', block, count=1, flags=re.IGNORECASE)
             # заменить отображаемое название, если отличается
             src_title = found['meta'].get('title') or ""
             if ch['name'] and normalize_name(src_title) != ch['norm_name']:
-                block = re.sub(r'(#EXTINF:[^\n]*?,).*\n', lambda m: m.group(1) + ch['name'] + "\n", block, count=1)
+                # безопасная замена названия в первой строке EXTINF, учёт CRLF и многострочного текста
+                clean_name = ch['name'].replace('\r', ' ').replace('\n', ' ').strip()
+                block = re.sub(
+                    r'(^#EXTINF:[^\r\n]*?,)[^\r\n]*([\r\n])',
+                    lambda m: m.group(1) + clean_name + m.group(2),
+                    block,
+                    count=1,
+                    flags=re.IGNORECASE | re.MULTILINE
+                )
                 report.append(f"{ch['name']}: исправлено название (источник #{found_src})")
             # сообщения по tvg-id
             if ch['desired_tvg'] and found['meta'].get('tvg-id') and found['meta']['tvg-id'].lower() != ch['desired_tvg'].lower():
