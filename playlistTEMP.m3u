@@ -15,19 +15,19 @@ http://zabava-htlive.cdn.ngenix.net/hls/CH_5TV/variant.m3u8
 http://31.131.141.195:8000/play/1090/index.m3u8
 #EXTINF:-1 tvg-id="tvcentr" tvg-logo="https://iptvx.one/picons/tvcentr.png" group-title="Развлекательные",ТВ Центр
 http://tvc-hls.cdnvideo.ru/tvc-res/smil:vd9221_2.smil/playlist.m3u8
-#EXTINF:-1 group-title="Развлекательные" tvg-logo="https://assets-iptv2022.cdnvideo.ru/static/channel/126/logo_256_1655445109.png",СТС HD
+#EXTINF:-1 tvg-id="sts" group-title="Развлекательные" tvg-logo="https://assets-iptv2022.cdnvideo.ru/static/channel/126/logo_256_1655445109.png",СТС HD
 #EXTVLCOPT:http-user-agent=Mozilla/5.0 (SmartTV; Linux; Tizen 6.0)
 https://mhd128.iptv2022.com/p/LcuKTzp6NmCQVDuI9qnanQ,1775285538/streaming/stsott/324/5/tracks-v5a1/mono.m3u8
-#EXTINF:-1 group-title="Развлекательные" tvg-logo="https://assets-iptv2022.cdnvideo.ru/static/channel/67/logo_256_1655445200.png",Домашний HD
+#EXTINF:-1 tvg-id="domashny" group-title="Развлекательные" tvg-logo="https://assets-iptv2022.cdnvideo.ru/static/channel/67/logo_256_1655445200.png",Домашний HD
 #EXTVLCOPT:http-user-agent=Mozilla/5.0 (SmartTV; Linux; Tizen 6.0)
 https://mhd128.iptv2022.com/p/QwaNREVFiFHJ16NqjqlcXQ,1775285538/streaming/domashiyott/324/5/tracks-v5a1/mono.m3u8
 #EXTINF:-1 tvg-id="mir" tvg-logo="https://iptvx.one/picons/mir.png" group-title="Развлекательные",Мир
 http://hls.mirtv.cdnvideo.ru/mirtv-parampublish/mirtv_2500/playlist.m3u8
 #EXTINF:-1 tvg-id="zapad-24" tvg-logo="https://iptvx.one/picons/zapad-24.png" group-title="Развлекательные",Запад 24 (Калининград)
 https://vgtrkregion-reg.cdnvideo.ru/vgtrk/kaliningrad/zapad24-hd/index.m3u8
-#EXTINF:-1 group-title="На Литовском" tvg-id="delfi-tv",Delfi TV
+#EXTINF:-1 tvg-id="delfi-tv" group-title="На Литовском",Delfi TV
 https://s1.dcdn.lt/live/televizija/playlist.m3u8
-#EXTINF:-1 group-title="На Литовском" tvg-id="lietuvos-ryto-televizija",Lietuvos Rytas TV (1080p)
+#EXTINF:-1 tvg-id="lietuvos-ryto-televizija" group-title="На Литовском",Lietuvos Rytas TV (1080p)
 https://live.lietuvosryto.tv/live/hls/eteris.m3u8
 #EXTINF:-1 group-title="На Литовском",M-1 (480p)
 https://m-1.data.lt/m-1/smil:m-1.smil/playlist.m3u8
