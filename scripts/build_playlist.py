@@ -5,8 +5,8 @@ scripts/build_playlist.py
 Собирает custom_playlist.m3u на основе:
  - sources/requestedIPTV
  - sources/sourcesplaylists
- - опционально playlist.m3u
-Выход: custom_playlist.m3u (по умолчанию в корне репозитория).
+ - опционально playlistTEMP.m3u
+Поддержка выбора дубликата через +n в строке спецификации.
 """
 
 import re
@@ -44,17 +44,33 @@ def read_lines(path: str):
 def parse_channels_spec(path: str):
     """
     Формат строки:
-      Название канала [tvg-id="desired"] [приоритеты через запятую]
-    Пример:
+      Название канала [tvg-id="desired"] [приоритеты через запятую] [опционально +n]
+    Примеры:
       Первый канал HD tvg-id="pervy" 1,2
+      Россия 1 HD tvg-id="ros" 1
+      Пятый канал 1,2,3
+      Домашний HD tvg-id="domashny" 1,3 +2
+    Возвращает список словарей:
+      { name, norm_name, desired_tvg, priorities, pick_index }
     """
     specs = []
     for raw in read_lines(path):
         line = raw.strip()
         if not line or line.startswith('#'):
             continue
+        # найти +n (pick index)
+        pick = None
+        m_pick = re.search(r'\+(\d+)', line)
+        if m_pick:
+            pick = int(m_pick.group(1))
+            # удалить маркер из строки, чтобы не мешал имени/приоритетам
+            line = re.sub(r'\+\d+', '', line).strip()
+
+        # найти tvg-id="..."
         m = re.search(r'tvg-id\s*=\s*"(.*?)"', line, flags=re.IGNORECASE)
         desired = m.group(1) if m else None
+
+        # найти приоритеты: числа через запятую в конце или где-то
         pr = re.search(r'(\d+(?:\s*,\s*\d+)*)\s*$', line)
         priorities = []
         if pr:
@@ -62,12 +78,16 @@ def parse_channels_spec(path: str):
             name_part = line[:pr.start()].strip()
         else:
             name_part = line
+
+        # удалить tvg-id часть из имени
         name_part = re.sub(r'tvg-id\s*=\s*".*?"', '', name_part, flags=re.IGNORECASE).strip()
+
         specs.append({
             "name": name_part,
             "norm_name": normalize_name(name_part),
             "desired_tvg": desired,
-            "priorities": priorities
+            "priorities": priorities,
+            "pick_index": pick  # None или целое >0
         })
     return specs
 
@@ -118,24 +138,42 @@ def parse_extinf_meta(extinf: str):
 
 
 def parse_m3u_entries(text: str):
+    """
+    Возвращает список записей в порядке появления:
+      { extinf, extvlc: [..], url, meta, full }
+    Сохраняет все #EXTVLCOPT строки между EXTINF и URL.
+    """
     lines = text.splitlines()
     entries = []
     i = 0
     while i < len(lines):
         line = lines[i].strip()
         if line.upper().startswith("#EXTINF"):
-            extinf = line
+            extinf = lines[i].rstrip('\r\n')
             extvlc = []
             j = i + 1
-            while j < len(lines) and lines[j].strip().upper().startswith("#EXTVLCOPT"):
-                extvlc.append(lines[j].strip())
+            # собрать все строки, начинающиеся с #EXTVLCOPT (и любые комментарии между EXTINF и URL)
+            while j < len(lines) and lines[j].strip().startswith("#"):
+                # если следующая строка — URL (не начинается с #), выйдем
+                if not lines[j].strip().startswith("#"):
+                    break
+                # сохраняем все #EXTVLCOPT и другие комментарии
+                if lines[j].strip().upper().startswith("#EXTVLCOPT"):
+                    extvlc.append(lines[j].rstrip('\r\n'))
+                else:
+                    # сохраняем прочие хэштеги, если нужно (необязательно)
+                    # extvlc.append(lines[j].rstrip('\r\n'))
+                    pass
                 j += 1
+            # следующая некомментированная строка — URL
             url = ""
-            if j < len(lines):
+            if j < len(lines) and lines[j].strip() and not lines[j].strip().startswith("#"):
                 url = lines[j].strip()
                 j += 1
             meta = parse_extinf_meta(extinf)
-            full = "\n".join([extinf] + extvlc + ([url] if url else []))
+            # full: extinf, затем все extvlc (в том порядке), затем url
+            parts = [extinf] + extvlc + ([url] if url else [])
+            full = "\n".join(parts)
             entries.append({"extinf": extinf, "extvlc": extvlc, "url": url, "meta": meta, "full": full})
             i = j
         else:
@@ -148,6 +186,24 @@ def normalize_group_title(g: str):
         return "Разное"
     g = re.sub(r'\s+', ' ', g.strip())
     return " ".join([w.capitalize() for w in g.split(' ')])
+
+
+# -------------------- Вспомогательные функции для выбора дубликата --------------------
+def choose_from_matches(matches: list, pick_index: int = None):
+    """
+    matches: список найденных записей в порядке сверху вниз
+    pick_index: None или 1-based индекс
+    Возвращает выбранную запись или None.
+    """
+    if not matches:
+        return None
+    if pick_index and pick_index > 0:
+        if pick_index <= len(matches):
+            return matches[pick_index - 1]
+        else:
+            return None
+    # по умолчанию — первый сверху
+    return matches[0]
 
 
 # -------------------- Сборка плейлиста --------------------
@@ -177,56 +233,68 @@ def build(channels_spec: str, sources_list: str, extra_local: str = None, out_pa
 
         priorities = sorted(ch['priorities'], reverse=True) if ch['priorities'] else sorted(entries_by_source.keys(), reverse=True)
 
-        # поиск по названию (приоритет)
+        # 1) поиск по названию (в каждом источнике собираем все совпадения)
         for sidx in priorities:
-            for e in entries_by_source.get(sidx, []):
+            entries = entries_by_source.get(sidx, [])
+            matches = []
+            for e in entries:
                 if not e['meta']['title']:
                     continue
+                # точное вхождение нормализованных названий или обратное вхождение
                 if ch['norm_name'] and (ch['norm_name'] in e['meta']['norm_title'] or e['meta']['norm_title'] in ch['norm_name']):
-                    found = e
+                    matches.append(e)
+                else:
+                    score = similar(ch['norm_name'], e['meta']['norm_title'])
+                    if score >= 0.78:
+                        matches.append(e)
+            if matches:
+                # выбрать нужный дубликат (если указан pick_index)
+                chosen = choose_from_matches(matches, ch.get('pick_index'))
+                if chosen:
+                    found = chosen
                     found_reason = 'name'
                     found_src = sidx
                     break
-                score = similar(ch['norm_name'], e['meta']['norm_title'])
-                if score >= 0.78:
-                    found = e
-                    found_reason = 'name_sim'
-                    found_src = sidx
-                    break
-            if found:
-                break
-
-        # поиск по tvg-id
+                # если pick_index указан, но в этом источнике нет такого индекса — пробуем следующий источник
+        # 2) поиск по tvg-id (если не найдено по названию)
         if not found and ch['desired_tvg']:
             for sidx in priorities:
-                for e in entries_by_source.get(sidx, []):
+                entries = entries_by_source.get(sidx, [])
+                matches = []
+                for e in entries:
                     tid = e['meta'].get('tvg-id') or ""
                     if tid and tid.lower() == ch['desired_tvg'].lower():
-                        found = e
+                        matches.append(e)
+                if matches:
+                    chosen = choose_from_matches(matches, ch.get('pick_index'))
+                    if chosen:
+                        found = chosen
                         found_reason = 'tvg-id'
                         found_src = sidx
                         break
-                if found:
-                    break
 
-        # fallback по похожему tvg-id
+        # 3) fallback по похожему tvg-id
         if not found:
             for sidx in priorities:
-                for e in entries_by_source.get(sidx, []):
+                entries = entries_by_source.get(sidx, [])
+                matches = []
+                for e in entries:
                     tid = e['meta'].get('tvg-id') or ""
                     if tid and (normalize_name(tid).find(ch['norm_name']) != -1 or ch['norm_name'].find(normalize_name(tid)) != -1):
-                        found = e
+                        matches.append(e)
+                if matches:
+                    chosen = choose_from_matches(matches, ch.get('pick_index'))
+                    if chosen:
+                        found = chosen
                         found_reason = 'tvg-id-sim'
                         found_src = sidx
                         break
-                if found:
-                    break
 
+        # Если нашли — подготовить блок
         if found:
             block = found['full']
 
             # заменить/вставить tvg-id в extinf (безопасно, через callable)
-                        # заменить/вставить tvg-id в extinf (безопасно, через callable)
             if ch['desired_tvg']:
                 if re.search(r'tvg-id\s*=\s*".*?"', block, flags=re.IGNORECASE):
                     block = re.sub(
@@ -262,7 +330,6 @@ def build(channels_spec: str, sources_list: str, extra_local: str = None, out_pa
                     count=1,
                     flags=re.IGNORECASE | re.MULTILINE
                 )
-
 
             # заменить отображаемое название, если отличается
             src_title = found['meta'].get('title') or ""
@@ -307,7 +374,7 @@ def main():
     p = argparse.ArgumentParser(description="Build custom IPTV playlist from sources")
     p.add_argument("--channels", "-c", default="sources/requestedIPTV", help="Файл со списком каналов")
     p.add_argument("--sources", "-s", default="sources/sourcesplaylists", help="Файл со списком источников")
-    p.add_argument("--temp", "-t", default="playlist.m3u", help="Локальный временный плейлист (опционально)")
+    p.add_argument("--temp", "-t", default="playlistTEMP.m3u", help="Локальный временный плейлист (опционально)")
     p.add_argument("--out", "-o", default="custom_playlist.m3u", help="Выходной m3u файл")
     args = p.parse_args()
 
