@@ -167,25 +167,23 @@ def build(channels_spec, sources_list, extra_local=None, out_path="custom_playli
             block = found['full']
             # заменить/вставить tvg-id в extinf (безопасно, через callable)
 if ch['desired_tvg']:
-    # заменить существующий tvg-id или добавить
-    if re.search(r'tvg-id\s*=\s*".*?"', block, flags=re.IGNORECASE):
-        block = re.sub(
-            r'(tvg-id\s*=\s*")(.*?)(")',
-            lambda m: m.group(1) + ch['desired_tvg'] + m.group(3),
-            block,
-            flags=re.IGNORECASE
-        )
-    else:
-        # вставить после #EXTINF:-1
-        block = re.sub(
-            r'(#EXTINF:[^\n]*?)\s*(,)',
-            lambda m: m.group(1) + ' tvg-id="' + ch['desired_tvg'] + '"' + m.group(2),
-            block,
-            count=1,
-            flags=re.IGNORECASE
-        )
-
-            # normalize group-title
+                if re.search(r'tvg-id\s*=\s*".*?"', block, flags=re.IGNORECASE):
+                    # безопасная замена через callable, чтобы избежать проблем с backreferences
+                    block = re.sub(
+                        r'(tvg-id\s*=\s*")(.*?)(")',
+                        lambda m: m.group(1) + ch['desired_tvg'] + m.group(3),
+                        block,
+                        flags=re.IGNORECASE
+                    )
+                else:
+                    block = re.sub(
+                        r'(#EXTINF:[^\n]*?)\s*(,)',
+                        lambda m: m.group(1) + ' tvg-id="' + ch['desired_tvg'] + '"' + m.group(2),
+                        block,
+                        count=1,
+                        flags=re.IGNORECASE
+                    )
+            # нормализовать group-title
             if re.search(r'group-title\s*=\s*".*?"', block, flags=re.IGNORECASE):
                 g = re.search(r'group-title\s*=\s*"(.*?)"', block, flags=re.IGNORECASE).group(1)
                 newg = normalize_group_title(g)
@@ -196,8 +194,10 @@ if ch['desired_tvg']:
                     block,
                     flags=re.IGNORECASE
                 )
-             else:
+            else:
+                # добавить group-title="Разное" если нет
                 block = re.sub(r'(#EXTINF:[^\n]*?)\s*(,)', r'\1 group-title="Разное"\2', block, count=1, flags=re.IGNORECASE)
+
             # заменить отображаемое название, если отличается
             src_title = found['meta'].get('title') or ""
             if ch['name'] and normalize_name(src_title) != ch['norm_name']:
