@@ -1,283 +1,331 @@
-import requests
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+build_playlist.py
+Создает/обновляет кастомный m3u плейлист на основе:
+ - channels_spec.txt (файл 1) -- список каналов, желаемые tvg-id и приоритеты источников
+ - sources_list.txt (файл 2) -- список источников (URL или локальные файлы), нумеруются с 1
+Пример формата файлов в README ниже.
+"""
+
 import re
+import sys
 import os
-import hashlib
-from datetime import datetime
+import argparse
+import requests
+from urllib.parse import urlparse
+from difflib import SequenceMatcher
 
-# Источники
-RU_SOURCE_FILE = "sources/ru.txt"
-LT_SOURCE_FILE = "sources/lt.txt"
+# --- Настройки ---
+REQUEST_TIMEOUT = 15
+USER_AGENT = "Mozilla/5.0 (compatible; PlaylistBuilder/1.0)"
+HEADERS = {"User-Agent": USER_AGENT}
 
-# Порядок каналов
-CHANNEL_ORDER = [
-    "Первый канал",
-    "Россия 1",
-    "Россия К",
-    "НТВ",
-    "Пятый канал",
-    "ОТР",
-    "ТВ центр",
-    "СТС",
-    "Домашний",
-    "Мир",
-    "Запад 24",
-    "Delfi TV",
-    "Lietuvos Rytas TV",
-    "M-1",
-    "Power Hit Radio",
-]
+# --- Утилиты ---
+def normalize_name(s: str) -> str:
+    """Нормализация названий для сравнения: lower, убрать спецсимволы, убрать слова HD, 4K и т.п."""
+    if not s:
+        return ""
+    s = s.lower()
+    # убрать tvg-... в названии если попало
+    s = re.sub(r'tvg-[a-z0-9"\-=_]+', '', s)
+    # убрать common tags
+    s = re.sub(r'\b(hd|sd|4k|fullhd|hd\.)\b', '', s)
+    # убрать скобки и содержимое в них
+    s = re.sub(r'\(.*?\)', '', s)
+    # оставить только буквы, цифры и пробелы
+    s = re.sub(r'[^0-9a-zа-яё\s]', ' ', s, flags=re.IGNORECASE)
+    s = re.sub(r'\s+', ' ', s).strip()
+    return s
 
-RADIO_CHANNELS = ["M-1", "Power Hit Radio"]
+def similar(a: str, b: str) -> float:
+    return SequenceMatcher(None, a, b).ratio()
 
-EPG_REMAP = {
-    "DelfiTV.lt@SD": "delfi-tv",
-    "LietuvosRytasTV.lt@SD": "lietuvos-ryto-televizija",
-}
-
-FIXED_TVG_IDS = {
-    "СТС": "sts",
-    "СТС HD": "sts",
-    "Домашний": "domashniy",
-    "Домашний HD": "domashniy",
-}
-
-EXCLUDE_PATTERNS = [
-    r"\+1", r"\+2", r"\+4", r"\+7",
-    r"International", r"Int",
-    r"Premium", r"World", r"Europe",
-    r"Baltic",
-    r"UHD", r"4K",
-]
-
-# -----------------------------
-#  СКАЧИВАНИЕ TV ЧЕРЕЗ RAW.GITHACK (РАБОТАЕТ ВСЕГДА)
-# -----------------------------
-def download_dimonovich_tv():
-    url = "https://raw.githack.com/Dimonovich/TV/Dimonovich/FREE/TV"
-    r = requests.get(url)
-    r.raise_for_status()
-    return r.text
-
-
-# -----------------------------
-#  ПАРСЕР M3U
-# -----------------------------
-def parse_m3u(text):
-    lines = text.splitlines()
-    result = []
-
-    current_extinf = None
-    current_vlcopts = []
-    current_url = None
-
-    for raw_line in lines:
-        line = raw_line.strip()
-        if not line:
-            continue
-
-        if line.startswith("#EXTINF"):
-            if current_extinf and current_url:
-                result.append(
-                    (current_extinf,
-                     "\n".join(current_vlcopts) if current_vlcopts else None,
-                     current_url)
-                )
-            current_extinf = line
-            current_vlcopts = []
-            current_url = None
-            continue
-
-        if line.startswith("#EXTVLCOPT"):
-            if current_extinf:
-                current_vlcopts.append(line)
-            continue
-
-        if re.match(r"^(https?|rtmp|rtsp)://", line):
-            if current_extinf:
-                current_url = line
-                result.append(
-                    (current_extinf,
-                     "\n".join(current_vlcopts) if current_vlcopts else None,
-                     current_url)
-                )
-                current_extinf = None
-                current_vlcopts = []
-                current_url = None
-            continue
-
-    return result
-
-
-# -----------------------------
-#  ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
-# -----------------------------
-def load_source_url(path):
-    with open(path, encoding="utf-8") as f:
-        return f.read().strip()
-
-def extract_name(extinf):
-    if "," not in extinf:
-        return None
-    name = extinf.split(",", 1)[1].strip()
-    name = re.sub(r"\(.*?\)", "", name).strip()
-    return name
-
-def normalize(name):
-    return re.sub(r"\s+", " ", name.lower()).strip()
-
-def is_excluded(name):
-    for pattern in EXCLUDE_PATTERNS:
-        if re.search(pattern, name, re.IGNORECASE):
-            return True
-    return False
-
-def load_existing_playlist():
-    if not os.path.exists("playlist.m3u"):
-        return {}
-    with open("playlist.m3u", encoding="utf-8") as f:
-        text = f.read()
-    entries = parse_m3u(text)
-    result = {}
-    for extinf, vlcopt, url in entries:
-        name = extract_name(extinf)
-        if name:
-            result[normalize(name)] = (extinf, vlcopt, url)
-    return result
-
-def find_best_variant(entries, target):
-    target_norm = normalize(target)
-    hd_norm = normalize(target + " HD")
-
-    hd = None
-    sd = None
-
-    for extinf, vlcopt, url in entries:
-        name = extract_name(extinf)
-        if not name:
-            continue
-
-        name_norm = normalize(name)
-
-        if is_excluded(name):
-            continue
-
-        if name_norm == hd_norm:
-            hd = (extinf, vlcopt, url)
-
-        if name_norm == target_norm:
-            sd = (extinf, vlcopt, url)
-
-    return hd or sd
-
-def remap_epg(extinf):
-    for old, new in EPG_REMAP.items():
-        extinf = re.sub(rf'tvg-id="{old}"', f'tvg-id="{new}"', extinf)
-    return extinf
-
-def fix_group_and_tvg(extinf, channel):
-    extinf = re.sub(r'group-title="[^"]+"', 'group-title="Развлекательные"', extinf)
-
-    for key, tvgid in FIXED_TVG_IDS.items():
-        if normalize(key) == normalize(channel):
-            if 'tvg-id="' in extinf:
-                extinf = re.sub(r'tvg-id="[^"]+"', f'tvg-id="{tvgid}"', extinf)
+# --- Парсинг входных файлов ---
+def parse_channels_spec(path: str):
+    """
+    Ожидаемый формат каждой строки:
+      Название канала [tvg-id="desired"] [приоритеты через запятую]
+    Примеры:
+      Первый канал HD tvg-id="pervy" 1,2
+      Россия 1 HD  tvg-id="ros" 1
+      Пятый канал 1,2,3
+    Возвращает список словарей:
+      { 'raw': line, 'name': name, 'desired_tvg': tvg or None, 'priorities': [int,...] }
+    """
+    specs = []
+    with open(path, "r", encoding="utf-8") as f:
+        for raw in f:
+            line = raw.strip()
+            if not line or line.startswith("#"):
+                continue
+            # найти tvg-id="..."
+            m = re.search(r'tvg-id\s*=\s*"(.*?)"', line, flags=re.IGNORECASE)
+            desired = m.group(1) if m else None
+            # найти приоритеты: числа через запятую в конце или где-то
+            pr = re.search(r'(\d+(?:\s*,\s*\d+)*)\s*$', line)
+            priorities = []
+            if pr:
+                priorities = [int(x.strip()) for x in pr.group(1).split(",") if x.strip().isdigit()]
+                # удалить приоритеты из имени
+                name_part = line[:pr.start()].strip()
             else:
-                extinf = extinf.replace(",", f' tvg-id="{tvgid}",')
-    return extinf
+                name_part = line
+            # удалить tvg-id часть из имени
+            name_part = re.sub(r'tvg-id\s*=\s*".*?"', '', name_part, flags=re.IGNORECASE).strip()
+            # final name
+            name = name_part
+            specs.append({
+                "raw": line,
+                "name": name,
+                "norm_name": normalize_name(name),
+                "desired_tvg": desired,
+                "priorities": priorities or []
+            })
+    return specs
 
-def strip_epg_for_radio(extinf, channel):
-    if channel in RADIO_CHANNELS:
-        extinf = re.sub(r'tvg-id="[^"]+"', '', extinf)
-    return extinf
+def read_sources_list(path: str):
+    """
+    Каждый непустой некомментированный рядок -- URL или локальный путь.
+    Возвращает список строк; индексация для приоритетов начинается с 1.
+    """
+    sources = []
+    with open(path, "r", encoding="utf-8") as f:
+        for raw in f:
+            line = raw.strip()
+            if not line or line.startswith("#"):
+                continue
+            sources.append(line)
+    return sources
 
-def file_hash(path):
-    if not os.path.exists(path):
-        return None
-    with open(path, "rb") as f:
-        return hashlib.md5(f.read()).hexdigest()
+# --- Загрузка контента источника ---
+def fetch_source(src: str):
+    if src.startswith("http://") or src.startswith("https://"):
+        try:
+            r = requests.get(src, headers=HEADERS, timeout=REQUEST_TIMEOUT)
+            r.raise_for_status()
+            return r.text
+        except Exception as e:
+            print(f"[WARN] Не удалось загрузить {src}: {e}", file=sys.stderr)
+            return ""
+    else:
+        # локальный файл
+        try:
+            with open(src, "r", encoding="utf-8", errors="ignore") as f:
+                return f.read()
+        except Exception as e:
+            print(f"[WARN] Не удалось открыть {src}: {e}", file=sys.stderr)
+            return ""
 
-def write_log(log_lines, changed):
-    with open("update.log", "a", encoding="utf-8") as f:
-        f.write("\n" + "="*60 + "\n")
-        f.write(f"Обновление: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-        f.write(f"Изменения: {'ДА' if changed else 'НЕТ'}\n")
-        f.write("-"*60 + "\n")
-        for line in log_lines:
-            f.write(line + "\n")
-        f.write("="*60 + "\n")
-
-
-# -----------------------------
-#  ОСНОВНАЯ ЛОГИКА
-# -----------------------------
-def build():
-    log = []
-
-    ru_url = load_source_url(RU_SOURCE_FILE)
-    lt_url = load_source_url(LT_SOURCE_FILE)
-
-    ru_entries = parse_m3u(requests.get(ru_url).text)
-    lt_entries = parse_m3u(requests.get(lt_url).text)
-
-    # 🔥 ВСЕГДА АКТУАЛЬНЫЙ TV ИЗ DIMONOVICH
-    third_text = download_dimonovich_tv()
-    third_entries = parse_m3u(third_text)
-
-    existing = load_existing_playlist()
-    old_hash = file_hash("playlist.m3u")
-
-    final = ["#EXTM3U"]
-
-    for channel in CHANNEL_ORDER:
-        target_norm = normalize(channel)
-
-        old_extinf, old_vlcopt, old_url = existing.get(target_norm, (None, None, None))
-
-        if channel in ["СТС", "Домашний"]:
-            new = find_best_variant(third_entries, channel)
-        elif channel in ["Delfi TV", "Lietuvos Rytas TV", "M-1", "Power Hit Radio"]:
-            new = find_best_variant(lt_entries, channel)
+# --- Парсинг m3u блоков ---
+def extract_entries(m3u_text: str):
+    """
+    Возвращает список записей, каждая запись как dict:
+      { 'extinf': full_extinf_line, 'extvlc': [lines], 'url': url_line, 'meta': {tvg-id, tvg-logo, group-title, title} }
+    Алгоритм: ищем строки #EXTINF и собираем до следующего #EXTINF.
+    """
+    lines = m3u_text.splitlines()
+    entries = []
+    i = 0
+    while i < len(lines):
+        line = lines[i].strip()
+        if line.upper().startswith("#EXTINF"):
+            extinf = line
+            extvlc = []
+            j = i + 1
+            # collect following #EXTVLCOPT lines
+            while j < len(lines) and lines[j].strip().upper().startswith("#EXTVLCOPT"):
+                extvlc.append(lines[j].strip())
+                j += 1
+            # next non-empty line should be URL (or sometimes another #EXTINF if malformed)
+            url = ""
+            if j < len(lines):
+                url = lines[j].strip()
+                j += 1
+            # parse meta from extinf
+            meta = parse_extinf_meta(extinf)
+            entries.append({
+                "extinf": extinf,
+                "extvlc": extvlc,
+                "url": url,
+                "meta": meta,
+                "full_block": "\n".join([extinf] + extvlc + ([url] if url else []))
+            })
+            i = j
         else:
-            new = find_best_variant(ru_entries, channel)
+            i += 1
+    return entries
 
-        if new:
-            extinf, vlcopt, url = new
-            extinf = remap_epg(extinf)
-            extinf = fix_group_and_tvg(extinf, channel)
-            log.append(f"[UPDATE] {channel}: обновлена ссылка")
+def parse_extinf_meta(extinf_line: str):
+    # tvg-id="..."
+    meta = {}
+    m = re.search(r'tvg-id\s*=\s*"(.*?)"', extinf_line, flags=re.IGNORECASE)
+    meta['tvg-id'] = m.group(1) if m else None
+    m = re.search(r'tvg-logo\s*=\s*"(.*?)"', extinf_line, flags=re.IGNORECASE)
+    meta['tvg-logo'] = m.group(1) if m else None
+    m = re.search(r'group-title\s*=\s*"(.*?)"', extinf_line, flags=re.IGNORECASE)
+    meta['group-title'] = m.group(1) if m else None
+    # title after comma
+    parts = extinf_line.split(",", 1)
+    title = parts[1].strip() if len(parts) > 1 else ""
+    meta['title'] = title
+    meta['norm_title'] = normalize_name(title)
+    return meta
+
+# --- Нормализация group-title ---
+def normalize_group_title(g: str):
+    if not g:
+        return "Разное"
+    g = g.strip()
+    # простая нормализация: убрать лишние пробелы, привести к заглавным буквам слов
+    g = re.sub(r'\s+', ' ', g)
+    return " ".join([w.capitalize() for w in g.split(" ")])
+
+# --- Основная логика поиска и сборки ---
+def build_playlist(channels_spec_path, sources_list_path, output_path):
+    specs = parse_channels_spec(channels_spec_path)
+    sources = read_sources_list(sources_list_path)
+    # загрузить все источники в память (индексация с 1)
+    source_contents = {}
+    for idx, src in enumerate(sources, start=1):
+        print(f"[INFO] Загружаю источник #{idx}: {src}")
+        source_contents[idx] = fetch_source(src)
+
+    # распарсить все источники в entries_by_source
+    entries_by_source = {}
+    for idx, text in source_contents.items():
+        entries_by_source[idx] = extract_entries(text)
+
+    # результат: список полных блоков, в порядке указанном в channels_spec
+    result_blocks = []
+    seen_full_blocks = set()  # чтобы исключить полные дубликаты
+    report = []  # сообщения о том, что было исправлено/добавлено
+
+    for ch in specs:
+        found = None
+        found_reason = None
+        found_source_idx = None
+        found_entry = None
+
+        # если приоритеты указаны, проверяем их в обратном порядке (большие номера первыми)
+        priorities = sorted(ch['priorities'], reverse=True) if ch['priorities'] else list(sorted(entries_by_source.keys(), reverse=True))
+        # сначала ищем совпадения по названию (приоритет)
+        for src_idx in priorities:
+            entries = entries_by_source.get(src_idx, [])
+            # поиск по названию: ищем entry, где norm_title содержит norm_name или наоборот
+            best = None
+            best_score = 0.0
+            for e in entries:
+                if not e['meta']['title']:
+                    continue
+                # exact substring match after normalization
+                if ch['norm_name'] and (ch['norm_name'] in e['meta']['norm_title'] or e['meta']['norm_title'] in ch['norm_name']):
+                    score = 1.0
+                else:
+                    score = similar(ch['norm_name'], e['meta']['norm_title'])
+                if score > best_score:
+                    best_score = score
+                    best = e
+            # порог для принятия по названию
+            if best and (best_score >= 0.75 or ch['norm_name'] in best['meta']['norm_title'] or best['meta']['norm_title'] in ch['norm_name']):
+                found = best
+                found_reason = "name"
+                found_source_idx = src_idx
+                found_entry = best
+                break
+        # если не найдено по названию, ищем по tvg-id
+        if not found and ch['desired_tvg']:
+            for src_idx in priorities:
+                entries = entries_by_source.get(src_idx, [])
+                for e in entries:
+                    if e['meta'].get('tvg-id') and e['meta']['tvg-id'].lower() == ch['desired_tvg'].lower():
+                        found = e
+                        found_reason = "tvg-id"
+                        found_source_idx = src_idx
+                        found_entry = e
+                        break
+                if found:
+                    break
+        # если не найдено по desired_tvg, можно также попытаться найти по любому tvg-id совпадающему с именем
+        if not found:
+            for src_idx in priorities:
+                entries = entries_by_source.get(src_idx, [])
+                for e in entries:
+                    # попытка: если tvg-id присутствует и нормализованное tvg-id похоже на имя
+                    tid = e['meta'].get('tvg-id') or ""
+                    if tid and (normalize_name(tid).find(ch['norm_name']) != -1 or ch['norm_name'].find(normalize_name(tid)) != -1):
+                        found = e
+                        found_reason = "tvg-id-similar"
+                        found_source_idx = src_idx
+                        found_entry = e
+                        break
+                if found:
+                    break
+
+        if found_entry:
+            # подготовка блока для вставки: заменить tvg-id если в spec указан desired_tvg
+            block = found_entry['full_block']
+            # заменить/вставить tvg-id в extinf
+            if ch['desired_tvg']:
+                # заменить существующий tvg-id или добавить
+                if re.search(r'tvg-id\s*=\s*".*?"', block, flags=re.IGNORECASE):
+                    block = re.sub(r'(tvg-id\s*=\s*").*?(")', r'\1' + ch['desired_tvg'] + r'\2', block, flags=re.IGNORECASE)
+                else:
+                    # вставить после #EXTINF:-1
+                    block = re.sub(r'(#EXTINF:[^\n]*?)\s*(,)', r'\1 tvg-id="' + ch['desired_tvg'] + r'"\2', block, count=1, flags=re.IGNORECASE)
+            # нормализовать group-title
+            if re.search(r'group-title\s*=\s*".*?"', block, flags=re.IGNORECASE):
+                g = re.search(r'group-title\s*=\s*"(.*?)"', block, flags=re.IGNORECASE).group(1)
+                newg = normalize_group_title(g)
+                block = re.sub(r'(group-title\s*=\s*").*?(")', r'\1' + newg + r'\2', block, flags=re.IGNORECASE)
+            else:
+                # добавить group-title="Разное" если нет
+                block = re.sub(r'(#EXTINF:[^\n]*?)\s*(,)', r'\1 group-title="Разное"\2', block, count=1, flags=re.IGNORECASE)
+
+            # заменить title в extinf на точное имя из spec (если нужно)
+            # если название в источнике существенно отличается от желаемого, подставим желаемое
+            src_title = found_entry['meta'].get('title') or ""
+            if ch['name'] and normalize_name(src_title) != ch['norm_name']:
+                # заменить часть после запятой
+                block = re.sub(r'(#EXTINF:[^\n]*?,).*\n', lambda m: m.group(1) + ch['name'] + "\n", block, count=1)
+                report.append(f"У {ch['name']} Исправлено название (источник #{found_source_idx})")
+            # если tvg-id был заменён
+            if ch['desired_tvg'] and found_entry['meta'].get('tvg-id') and found_entry['meta']['tvg-id'].lower() != ch['desired_tvg'].lower():
+                report.append(f"У {ch['name']} исправлен tvg-id ({found_entry['meta']['tvg-id']} -> {ch['desired_tvg']})")
+            if ch['desired_tvg'] and not found_entry['meta'].get('tvg-id'):
+                report.append(f"У {ch['name']} добавлен отсутствующий tvg-id ({ch['desired_tvg']})")
+            # исключаем полные дубликаты
+            if block not in seen_full_blocks:
+                result_blocks.append(block)
+                seen_full_blocks.add(block)
+            else:
+                print(f"[INFO] Дубликат пропущен для {ch['name']}", file=sys.stderr)
         else:
-            extinf, vlcopt, url = old_extinf, old_vlcopt, old_url
-            log.append(f"[FALLBACK] {channel}: использована старая ссылка")
+            print(f"[WARN] Не найден канал: {ch['name']}", file=sys.stderr)
+            report.append(f"{ch['name']}: не найден в источниках")
 
-        if not extinf or not url:
-            log.append(f"[SKIP] {channel}: нет данных")
-            continue
+    # Записать итоговый m3u
+    with open(output_path, "w", encoding="utf-8") as out:
+        out.write("#EXTM3U\n")
+        for b in result_blocks:
+            out.write(b.rstrip() + "\n")
+            # убедиться, что между блоками есть пустая строка для читаемости
+            out.write("\n")
 
-        extinf = strip_epg_for_radio(extinf, channel)
+    print(f"[OK] Плейлист записан в {output_path}")
+    print("\nОтчет:")
+    for r in report:
+        print(" -", r)
 
-        final.append(extinf)
-        if vlcopt:
-            final.append(vlcopt)
-        final.append(url)
-
-    new_content = "\n".join(final)
-    new_hash = hashlib.md5(new_content.encode("utf-8")).hexdigest()
-
-    changed = new_hash != old_hash
-
-    if not changed:
-        print("Нет изменений — файл не обновлён.")
-        write_log(log, changed=False)
-        return
-
-    with open("playlist.m3u", "w", encoding="utf-8") as f:
-        f.write(new_content)
-
-    write_log(log, changed=True)
-
-    print("\n".join(log))
-    print("playlist.m3u updated")
-
+# --- CLI ---
+def main():
+    parser = argparse.ArgumentParser(description="Build custom IPTV playlist from sources")
+    parser.add_argument("--channels", "-c", required=True, help="Файл со списком каналов (channels_spec.txt)")
+    parser.add_argument("--sources", "-s", required=True, help="Файл со списком источников (sources_list.txt)")
+    parser.add_argument("--out", "-o", default="custom_playlist.m3u", help="Выходной m3u файл")
+    args = parser.parse_args()
+    build_playlist(args.channels, args.sources, args.out)
 
 if __name__ == "__main__":
-    build()
+    main()
