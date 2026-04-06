@@ -5,13 +5,13 @@ https://edge1.1internet.tv/dash-live2/streams/1tv-dvr/1tvdash.mpd
 #EXTINF:-1 tvg-id="rossia1" tvg-logo="https://iptvx.one/picons/rossia1.png" group-title="Развлекательные" ,Россия 1 HD
 https://vgtrkregion-reg.cdnvideo.ru/vgtrk/0/russia1-hd/index.m3u8
 
-#EXTINF:-1 tvg-id="kultura" tvg-logo="https://iptvx.one/picons/rossia1.png" group-title="Развлекательные" ,Россия К HD; ;
+#EXTINF:-1 tvg-id="kultura" tvg-logo="https://iptvx.one/picons/rossia1.png" group-title="Развлекательные" ,Россия К HD
 https://vgtrkregion-reg.cdnvideo.ru/vgtrk/0/russia1-hd/index.m3u8
 
 #EXTINF:-1 tvg-id="ntv" tvg-logo="https://iptvx.one/picons/ntv.png" group-title="Развлекательные" ,НТВ HD
 https://cdn.ntv.ru/ntv0/playlist.m3u8
 
-#EXTINF:-1 tvg-id="5kanal-ru" tvg-logo="https://iptvx.one/picons/pervy.png" group-title="Развлекательные" ,Пятый канал; ;
+#EXTINF:-1 tvg-id="5kanal-ru" tvg-logo="https://iptvx.one/picons/pervy.png" group-title="Развлекательные" ,Пятый канал
 https://edge1.1internet.tv/dash-live2/streams/1tv-dvr/1tvdash.mpd
 
 #EXTINF:-1 tvg-id="otr" tvg-logo="https://iptvx.one/picons/otr.png" group-title="Развлекательные",ОТР
@@ -20,20 +20,14 @@ http://31.131.141.195:8000/play/1090/index.m3u8
 #EXTINF:-1 tvg-id="tvcentr" tvg-logo="https://iptvx.one/picons/tvcentr.png" group-title="Развлекательные" ,ТВ Центр
 http://tvc-hls.cdnvideo.ru/tvc-res/smil:vd9221_2.smil/playlist.m3u8
 
+#EXTINF:-1 group-title="Развлекательные" tvg-id="sts",СТС HD
+http://127.0.0.1:6878/ace/getstream?id=5e06a45d6939341fb7427189245380086c1d63c7
+
+#EXTINF:-1 group-title="Развлекательные" tvg-id="domashny",Домашний HD
+http://127.0.0.1:6878/ace/getstream?id=66e2f44bd0a7687a61f5cc4f03bcfc20a505057c
+
 #EXTINF:-1 tvg-id="mir" tvg-logo="https://iptvx.one/picons/mir.png" group-title="Развлекательные" ,Мир
 http://hls.mirtv.cdnvideo.ru/mirtv-parampublish/mirtv_2500/playlist.m3u8
 
 #EXTINF:-1 tvg-id="zapad-24" tvg-logo="https://iptvx.one/picons/zapad-24.png" group-title="Развлекательные",Запад 24 (Калининград)
 https://vgtrkregion-reg.cdnvideo.ru/vgtrk/kaliningrad/zapad24-hd/index.m3u8
-
-#EXTINF:-1 tvg-id="delfi-tv" group-title="Разное",Delfi TV; ; 2; На Литовском
-https://s1.dcdn.lt/live/televizija/playlist.m3u8
-
-#EXTINF:-1 tvg-id="lietuvos-ryto-televizija" group-title="Разное",Lietuvos Rytas TV; ; 2; На Литовском
-https://live.lietuvosryto.tv/live/hls/eteris.m3u8
-
-#EXTINF:-1  group-title="Разное",M-1 (480p); 2; На Литовском
-https://m-1.data.lt/m-1/smil:m-1.smil/playlist.m3u8
-
-#EXTINF:-1  group-title="Разное",Power Hit Radio (576p); 2; На Литовском
-https://cdnlb.tvplayhome.lt/live/eds/PWR_LTU_Live/GO3_LIVE_HLS/PWR_LTU_Live.m3u8?cdntoken=eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDczNDU2NjEsInBhdGgiOiIvbGl2ZS9lZHMvUFdSX0xUVV9MaXZlL0dPM19MSVZFX0hMUy8iLCJzaXAiOiI3Mi4xMS4xNTcuMTEyIiwiZGV2aWNlX2lkIjoiMCIsInNlc3Npb25faWQiOiIwIiwiY2xpZW50X2lkIjoiMCJ9.oHc5wUgwNPQ-4P7wJy_WvWQh0muFg9Lprhc4STS3cUHi0FI4tAKGdZOOeE-dOhVBHKFUYETmoXSMrrVHOeLC3g
