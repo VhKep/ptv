@@ -166,7 +166,7 @@ def build(channels_spec, sources_list, extra_local=None, out_path="custom_playli
         if found:
             block = found['full']
             # заменить/вставить tvg-id в extinf (безопасно, через callable)
-if ch['desired_tvg']:
+            if ch['desired_tvg']:
                 if re.search(r'tvg-id\s*=\s*".*?"', block, flags=re.IGNORECASE):
                     # безопасная замена через callable, чтобы избежать проблем с backreferences
                     block = re.sub(
@@ -183,6 +183,7 @@ if ch['desired_tvg']:
                         count=1,
                         flags=re.IGNORECASE
                     )
+
             # нормализовать group-title
             if re.search(r'group-title\s*=\s*".*?"', block, flags=re.IGNORECASE):
                 g = re.search(r'group-title\s*=\s*"(.*?)"', block, flags=re.IGNORECASE).group(1)
@@ -211,6 +212,7 @@ if ch['desired_tvg']:
                     flags=re.IGNORECASE | re.MULTILINE
                 )
                 report.append(f"{ch['name']}: исправлено название (источник #{found_src})")
+
             # сообщения по tvg-id
             if ch['desired_tvg'] and found['meta'].get('tvg-id') and found['meta']['tvg-id'].lower() != ch['desired_tvg'].lower():
                 report.append(f"{ch['name']}: tvg-id {found['meta']['tvg-id']} -> {ch['desired_tvg']}")
@@ -221,6 +223,7 @@ if ch['desired_tvg']:
                 seen.add(block)
         else:
             report.append(f"{ch['name']}: не найден")
+
 
     # записать
     header = "#EXTM3U\n"
