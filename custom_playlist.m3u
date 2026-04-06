@@ -20,10 +20,10 @@ http://31.131.141.195:8000/play/1090/index.m3u8
 #EXTINF:-1 tvg-id="tvcentr" tvg-logo="https://iptvx.one/picons/tvcentr.png" group-title="Развлекательные" ,ТВ Центр
 http://tvc-hls.cdnvideo.ru/tvc-res/smil:vd9221_2.smil/playlist.m3u8
 
-#EXTINF:-1 group-title="Развлекательные" tvg-id="sts",СТС HD
+#EXTINF:-1 group-title="Развлекательные" tvg-id="sts",СТС HD; ; 1,3;
 http://127.0.0.1:6878/ace/getstream?id=5e06a45d6939341fb7427189245380086c1d63c7
 
-#EXTINF:-1 group-title="Развлекательные" tvg-id="domashny",Домашний HD
+#EXTINF:-1 group-title="Развлекательные" tvg-id="domashny",Домашний HD; ; 1,3;
 http://127.0.0.1:6878/ace/getstream?id=66e2f44bd0a7687a61f5cc4f03bcfc20a505057c
 
 #EXTINF:-1 tvg-id="mir" tvg-logo="https://iptvx.one/picons/mir.png" group-title="Развлекательные" ,Мир
