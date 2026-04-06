@@ -226,6 +226,7 @@ def build(channels_spec: str, sources_list: str, extra_local: str = None, out_pa
             block = found['full']
 
             # заменить/вставить tvg-id в extinf (безопасно, через callable)
+                        # заменить/вставить tvg-id в extinf (безопасно, через callable)
             if ch['desired_tvg']:
                 if re.search(r'tvg-id\s*=\s*".*?"', block, flags=re.IGNORECASE):
                     block = re.sub(
@@ -236,11 +237,11 @@ def build(channels_spec: str, sources_list: str, extra_local: str = None, out_pa
                     )
                 else:
                     block = re.sub(
-                        r'(#EXTINF:[^\n]*?)\s*(,)',
+                        r'(^#EXTINF:[^\r\n]*?)(,)',
                         lambda m: m.group(1) + ' tvg-id="' + ch['desired_tvg'] + '"' + m.group(2),
                         block,
                         count=1,
-                        flags=re.IGNORECASE
+                        flags=re.IGNORECASE | re.MULTILINE
                     )
 
             # нормализовать group-title
@@ -254,7 +255,14 @@ def build(channels_spec: str, sources_list: str, extra_local: str = None, out_pa
                     flags=re.IGNORECASE
                 )
             else:
-                block = re.sub(r'(#EXTINF:[^\n]*?)\s*(,)', r'\1 group-title="Разное"\2', block, count=1, flags=re.IGNORECASE)
+                block = re.sub(
+                    r'(^#EXTINF:[^\r\n]*?)(,)',
+                    lambda m: m.group(1) + ' group-title="Разное"' + m.group(2),
+                    block,
+                    count=1,
+                    flags=re.IGNORECASE | re.MULTILINE
+                )
+
 
             # заменить отображаемое название, если отличается
             src_title = found['meta'].get('title') or ""
