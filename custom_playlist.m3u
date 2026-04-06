@@ -1,0 +1,47 @@
+#EXTM3U
+#EXTINF:-1 tvg-id="pervy" tvg-logo="https://iptvx.one/picons/pervy.png" group-title="Развлекательные",Первый канал HD
+https://edge1.1internet.tv/dash-live2/streams/1tv-dvr/1tvdash.mpd
+
+#EXTINF:-1 tvg-id="rossia1" tvg-logo="https://iptvx.one/picons/rossia1.png" group-title="Развлекательные",Россия 1 HD
+https://vgtrkregion-reg.cdnvideo.ru/vgtrk/0/russia1-hd/index.m3u8
+
+#EXTINF:-1 tvg-id="kultura" tvg-logo="https://iptvx.one/picons/rossia1.png" group-title="Развлекательные",Россия К HD; ;
+https://vgtrkregion-reg.cdnvideo.ru/vgtrk/0/russia1-hd/index.m3u8
+
+#EXTINF:-1 tvg-id="ntv" tvg-logo="https://iptvx.one/picons/ntv.png" group-title="Развлекательные",НТВ HD
+https://cdn.ntv.ru/ntv0/playlist.m3u8
+
+#EXTINF:-1 tvg-id="5kanal-ru" tvg-logo="https://iptvx.one/picons/pervy.png" group-title="Развлекательные",Пятый канал; ;
+https://edge1.1internet.tv/dash-live2/streams/1tv-dvr/1tvdash.mpd
+
+#EXTINF:-1 tvg-id="otr" tvg-logo="https://iptvx.one/picons/otr.png" group-title="Развлекательные",ОТР
+http://31.131.141.195:8000/play/1090/index.m3u8
+
+#EXTINF:-1 tvg-id="tvcentr" tvg-logo="https://iptvx.one/picons/tvcentr.png" group-title="Развлекательные",ТВ Центр
+http://tvc-hls.cdnvideo.ru/tvc-res/smil:vd9221_2.smil/playlist.m3u8
+
+#EXTINF:-1 tvg-id="sts" group-title="Развлекательные" tvg-logo="https://assets-iptv2022.cdnvideo.ru/static/channel/126/logo_256_1655445109.png",СТС HD
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (SmartTV; Linux; Tizen 6.0)
+https://mhd128.iptv2022.com/p/LcuKTzp6NmCQVDuI9qnanQ,1775285538/streaming/stsott/324/5/tracks-v5a1/mono.m3u8
+
+#EXTINF:-1 tvg-id="domashny" group-title="Развлекательные" tvg-logo="https://assets-iptv2022.cdnvideo.ru/static/channel/67/logo_256_1655445200.png",Домашний HD
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (SmartTV; Linux; Tizen 6.0)
+https://mhd128.iptv2022.com/p/QwaNREVFiFHJ16NqjqlcXQ,1775285538/streaming/domashiyott/324/5/tracks-v5a1/mono.m3u8
+
+#EXTINF:-1 tvg-id="mir" tvg-logo="https://iptvx.one/picons/mir.png" group-title="Развлекательные",Мир
+http://hls.mirtv.cdnvideo.ru/mirtv-parampublish/mirtv_2500/playlist.m3u8
+
+#EXTINF:-1 tvg-id="zapad-24" tvg-logo="https://iptvx.one/picons/zapad-24.png" group-title="Развлекательные",Запад 24 (Калининград)
+https://vgtrkregion-reg.cdnvideo.ru/vgtrk/kaliningrad/zapad24-hd/index.m3u8
+
+#EXTINF:-1 tvg-id="delfi-tv" group-title="На Литовском",Delfi TV; ; 2; На Литовском
+https://s1.dcdn.lt/live/televizija/playlist.m3u8
+
+#EXTINF:-1 tvg-id="lietuvos-ryto-televizija" group-title="На Литовском",Lietuvos Rytas TV; ; 2; На Литовском
+https://live.lietuvosryto.tv/live/hls/eteris.m3u8
+
+#EXTINF:-1 group-title="На Литовском",M-1 (480p); 2; На Литовском
+https://m-1.data.lt/m-1/smil:m-1.smil/playlist.m3u8
+
+#EXTINF:-1 group-title="На Литовском",Power Hit Radio (576p); 2; На Литовском
+https://cdnlb.tvplayhome.lt/live/eds/PWR_LTU_Live/GO3_LIVE_HLS/PWR_LTU_Live.m3u8?cdntoken=eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDczNDU2NjEsInBhdGgiOiIvbGl2ZS9lZHMvUFdSX0xUVV9MaXZlL0dPM19MSVZFX0hMUy8iLCJzaXAiOiI3Mi4xMS4xNTcuMTEyIiwiZGV2aWNlX2lkIjoiMCIsInNlc3Npb25faWQiOiIwIiwiY2xpZW50X2lkIjoiMCJ9.oHc5wUgwNPQ-4P7wJy_WvWQh0muFg9Lprhc4STS3cUHi0FI4tAKGdZOOeE-dOhVBHKFUYETmoXSMrrVHOeLC3g
