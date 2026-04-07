@@ -8,7 +8,7 @@ import requests
 from difflib import SequenceMatcher
 
 REQUEST_TIMEOUT = 15
-HEADERS = {"User-Agent": "Mozilla/5.0 (PlaylistBuilder/3.0)"}
+HEADERS = {"User-Agent": "Mozilla/5.0 (PlaylistBuilder/3.1)"}
 
 
 # -------------------- Утилиты --------------------
@@ -46,43 +46,29 @@ KNOWN_SUFFIXES = {
 
 
 def split_name(name: str):
-    """
-    Универсальный разбор названия:
-    - удаляем хвосты в скобках
-    - определяем HD/SD
-    - определяем base и suffix
-    """
-
     if not name:
         return "", "", "sd"
 
-    # Удаляем всё в скобках
     name = re.sub(r"\(.*?\)", "", name).strip()
 
-    # Определяем HD
     quality = "hd" if re.search(r"\bhd\b", name, flags=re.IGNORECASE) else "sd"
 
-    # Убираем HD из текста
     name_clean = re.sub(r"\bhd\b", "", name, flags=re.IGNORECASE).strip()
 
-    # Нормализуем
     n = name_clean.lower()
     n = re.sub(r"[^0-9a-zа-яё\s]", " ", n)
     n = re.sub(r"\s+", " ", n).strip()
 
     parts = n.split()
 
-    # Если одно слово — это base
     if len(parts) == 1:
         return parts[0], "", quality
 
-    # Если последнее слово — известный suffix
     if parts[-1] in KNOWN_SUFFIXES:
         base = " ".join(parts[:-1])
         suffix = parts[-1]
         return base, suffix, quality
 
-    # Иначе — это обычное многословное название
     return n, "", quality
 
 
@@ -129,7 +115,7 @@ def parse_channels_spec(path: str):
             "base": base,
             "suffix": suffix,
             "quality": quality,
-            "is_main": suffix == ""  # основной канал
+            "is_main": suffix == ""
         })
 
     return specs
@@ -143,7 +129,6 @@ def read_sources_list(path: str):
         if not line or line.startswith("#"):
             continue
 
-        # Удаляем нумерацию "1)" "2)" "3)"
         cleaned = re.sub(r"^\s*\d+\)\s*", "", line)
         srcs.append(cleaned)
 
@@ -237,7 +222,6 @@ def filter_matches(spec, matches):
     if not filtered:
         return []
 
-    # HD > SD
     hd = [e for e in filtered if e["meta"]["quality"] == "hd"]
     if hd:
         return hd
@@ -279,9 +263,10 @@ def build(channels_spec, sources_list, out_path="playlist.m3u"):
 
         priorities = sorted(ch["priorities"], reverse=True) if ch["priorities"] else all_sources
 
-        # 1) Поиск по tvg-id
-        if ch["desired_tvg"]:
-            for sidx in priorities:
+        for sidx in priorities:
+            # 1) Поиск по tvg-id
+            matches = []
+            if ch["desired_tvg"]:
                 matches = [
                     e for e in entries_by_source[sidx]
                     if (e["meta"]["tvg-id"] or "").lower() == ch["desired_tvg"].lower()
@@ -289,22 +274,19 @@ def build(channels_spec, sources_list, out_path="playlist.m3u"):
                 matches = filter_matches(ch, matches)
                 matches = sorted(matches, key=lambda x: x["pos"])
                 found = choose_from_matches(matches, ch["pick_index"])
-                if found:
-                    break
 
-        # 2) Поиск по base/suffix
-        if not found:
-            for sidx in priorities:
+            # 2) Поиск по названию
+            if not found:
                 matches = [
                     e for e in entries_by_source[sidx]
                     if e["meta"]["base"] == ch["base"]
                 ]
-
                 matches = filter_matches(ch, matches)
                 matches = sorted(matches, key=lambda x: x["pos"])
                 found = choose_from_matches(matches, ch["pick_index"])
-                if found:
-                    break
+
+            if found:
+                break
 
         if not found:
             report.append(f"{ch['name']}: не найден")
@@ -312,21 +294,18 @@ def build(channels_spec, sources_list, out_path="playlist.m3u"):
 
         block = found["full"]
 
-        # tvg-id
         if ch["desired_tvg"]:
             if re.search(r'tvg-id=".*?"', block):
                 block = re.sub(r'tvg-id=".*?"', f'tvg-id="{ch["desired_tvg"]}"', block)
             else:
                 block = block.replace("#EXTINF:", f'#EXTINF: tvg-id="{ch["desired_tvg"]}" ', 1)
 
-        # group-title
         if ch["group_override"]:
             if re.search(r'group-title=".*?"', block):
                 block = re.sub(r'group-title=".*?"', f'group-title="{ch["group_override"]}"', block)
             else:
                 block = block.replace("#EXTINF:", f'#EXTINF: group-title="{ch["group_override"]}" ', 1)
 
-        # Название (без скобок)
         clean_name = re.sub(r"\(.*?\)", "", ch["name"]).strip()
         block = re.sub(r'(#EXTINF:[^,]*,)(.*)', r'\1' + clean_name, block)
 
