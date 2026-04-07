@@ -403,9 +403,6 @@ def build(channels_spec, sources_list, out_path="playlist.m3u"):
 
     return report
 
-
-
-
 def main():
     import argparse
     p = argparse.ArgumentParser()
