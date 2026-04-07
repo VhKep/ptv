@@ -70,14 +70,17 @@ def parse_channels_spec(path: str):
         })
     return specs
 
-
 def read_sources_list(path: str):
     srcs = []
     for raw in read_lines(path):
         line = raw.strip()
         if not line or line.startswith('#'):
             continue
-        srcs.append(line)
+
+        # Удаляем нумерацию вида "1)" или "12)"
+        cleaned = re.sub(r'^\s*\d+\)\s*', '', line)
+
+        srcs.append(cleaned)
     return srcs
 
 
