@@ -302,8 +302,8 @@ def build(channels_spec, sources_list, out_path="playlist.m3u"):
 
         # group-title
         if ch["group_override"]:
-            # Разбираем EXTINF до запятой
-            m = re.match(r'(#EXTINF:[^,]*),(.*)', block, flags=re.DOTALL)
+            # Универсальный разбор EXTINF
+            m = re.match(r'(#EXTINF\s*:[^,]*),(.*)', block, flags=re.DOTALL)
             if m:
                 extinf = m.group(1)
                 title = m.group(2)
@@ -314,16 +314,17 @@ def build(channels_spec, sources_list, out_path="playlist.m3u"):
                 # Удаляем двойные пробелы
                 extinf = re.sub(r'\s+', ' ', extinf).strip()
 
-                # Добавляем новый group-title
-                # Вставляем сразу после "#EXTINF:"
-                extinf = extinf.replace(
-                    "#EXTINF:",
+                # Вставляем новый group-title сразу после "#EXTINF:"
+                extinf = re.sub(
+                    r'#EXTINF\s*:',
                     f'#EXTINF: group-title="{ch["group_override"]}" ',
-                    1
+                    extinf,
+                    count=1
                 )
 
                 # Собираем обратно
                 block = f"{extinf},{title}"
+
 
         clean_name = re.sub(r"\(.*?\)", "", ch["name"]).strip()
         block = re.sub(r'(#EXTINF:[^,]*,)(.*)', r'\1' + clean_name, block)
