@@ -302,28 +302,29 @@ def build(channels_spec, sources_list, out_path="playlist.m3u"):
 
         # group-title
         if ch["group_override"]:
-            # Универсальный разбор EXTINF
-            m = re.match(r'(#EXTINF\s*:[^,]*),(.*)', block, flags=re.DOTALL)
-            if m:
-                extinf = m.group(1)
-                title = m.group(2)
+            # Ищем первую запятую — она отделяет атрибуты от названия
+            if "," in block:
+                before, after = block.split(",", 1)
 
+                # before = "#EXTINF: ... атрибуты ..."
                 # Удаляем старый group-title
-                extinf = re.sub(r'group-title=".*?"', '', extinf)
+                before = re.sub(r'group-title=".*?"', "", before)
 
                 # Удаляем двойные пробелы
-                extinf = re.sub(r'\s+', ' ', extinf).strip()
+                before = re.sub(r'\s+', ' ', before).strip()
 
-                # Вставляем новый group-title сразу после "#EXTINF:"
-                extinf = re.sub(
-                    r'#EXTINF\s*:',
-                    f'#EXTINF: group-title="{ch["group_override"]}" ',
-                    extinf,
-                    count=1
-                )
+                # Гарантируем, что строка начинается с "#EXTINF:"
+                if before.startswith("#EXTINF"):
+                    # Вставляем новый group-title сразу после "#EXTINF:"
+                    before = re.sub(
+                        r'#EXTINF\s*:',
+                        f'#EXTINF: group-title="{ch["group_override"]}" ',
+                        before,
+                        count=1
+                    )
 
                 # Собираем обратно
-                block = f"{extinf},{title}"
+                block = f"{before},{after}"
 
 
         clean_name = re.sub(r"\(.*?\)", "", ch["name"]).strip()
