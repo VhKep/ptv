@@ -8,7 +8,7 @@ import requests
 from difflib import SequenceMatcher
 
 REQUEST_TIMEOUT = 15
-HEADERS = {"User-Agent": "Mozilla/5.0 (PlaylistBuilder/2.0)"}
+HEADERS = {"User-Agent": "Mozilla/5.0 (PlaylistBuilder/3.0)"}
 
 
 # -------------------- Утилиты --------------------
@@ -36,40 +36,54 @@ def fetch_text(src: str) -> str:
         return ""
 
 
-# -------------------- Нормализация названий --------------------
+# -------------------- Универсальная нормализация названий --------------------
+
+KNOWN_SUFFIXES = {
+    "kids", "love", "plus", "international", "world", "hits",
+    "family", "action", "europe", "asia", "africa", "uhd",
+    "premium", "extra", "classic", "cinema", "music"
+}
+
+
 def split_name(name: str):
     """
-    Разбивает название на:
-    - base: основа (СТС, Домашний, СТС Kids → стс kids)
-    - suffix: дополнительные слова (love, kids)
-    - quality: hd / sd
+    Универсальный разбор названия:
+    - удаляем хвосты в скобках
+    - определяем HD/SD
+    - определяем base и suffix
     """
 
     if not name:
         return "", "", "sd"
 
-    n = name.lower().strip()
+    # Удаляем всё в скобках
+    name = re.sub(r"\(.*?\)", "", name).strip()
 
     # Определяем HD
-    quality = "hd" if "hd" in n else "sd"
+    quality = "hd" if re.search(r"\bhd\b", name, flags=re.IGNORECASE) else "sd"
 
     # Убираем HD из текста
-    n = re.sub(r"\bhd\b", "", n).strip()
+    name_clean = re.sub(r"\bhd\b", "", name, flags=re.IGNORECASE).strip()
 
-    # Убираем лишние символы
+    # Нормализуем
+    n = name_clean.lower()
     n = re.sub(r"[^0-9a-zа-яё\s]", " ", n)
     n = re.sub(r"\s+", " ", n).strip()
 
     parts = n.split()
 
+    # Если одно слово — это base
     if len(parts) == 1:
-        base = parts[0]
-        suffix = ""
-    else:
-        base = parts[0]
-        suffix = " ".join(parts[1:])
+        return parts[0], "", quality
 
-    return base, suffix, quality
+    # Если последнее слово — известный suffix
+    if parts[-1] in KNOWN_SUFFIXES:
+        base = " ".join(parts[:-1])
+        suffix = parts[-1]
+        return base, suffix, quality
+
+    # Иначе — это обычное многословное название
+    return n, "", quality
 
 
 def similar(a: str, b: str) -> float:
@@ -108,7 +122,6 @@ def parse_channels_spec(path: str):
 
         specs.append({
             "name": name,
-            "norm_name": name.lower(),
             "desired_tvg": epg_id or None,
             "group_override": group or None,
             "priorities": priorities,
@@ -116,7 +129,7 @@ def parse_channels_spec(path: str):
             "base": base,
             "suffix": suffix,
             "quality": quality,
-            "is_main": suffix == ""  # СТС / СТС HD
+            "is_main": suffix == ""  # основной канал
         })
 
     return specs
@@ -141,12 +154,6 @@ def parse_extinf_meta(extinf: str):
     meta = {}
     m = re.search(r'tvg-id\s*=\s*"(.*?)"', extinf, flags=re.IGNORECASE)
     meta["tvg-id"] = m.group(1) if m else None
-
-    m = re.search(r'tvg-logo\s*=\s*"(.*?)"', extinf, flags=re.IGNORECASE)
-    meta["tvg-logo"] = m.group(1) if m else None
-
-    m = re.search(r'group-title\s*=\s*"(.*?)"', extinf, flags=re.IGNORECASE)
-    meta["group-title"] = m.group(1) if m else None
 
     parts = extinf.split(",", 1)
     title = parts[1].strip() if len(parts) > 1 else ""
@@ -205,13 +212,6 @@ def parse_m3u_entries(text: str):
 
 # -------------------- Фильтрация совпадений --------------------
 def filter_matches(spec, matches):
-    """
-    Применяет правила:
-    - тип A: разрешены только base совпадения без suffix
-    - тип B: разрешены только совпадения с тем же suffix
-    - HD > SD
-    """
-
     base = spec["base"]
     suffix = spec["suffix"]
     is_main = spec["is_main"]
@@ -222,16 +222,13 @@ def filter_matches(spec, matches):
         mb = e["meta"]["base"]
         ms = e["meta"]["suffix"]
 
-        # Тип A: СТС / СТС HD
+        if mb != base:
+            continue
+
         if is_main:
-            if mb != base:
-                continue
             if ms != "":
-                continue  # игнорируем Love/Kids
-        else:
-            # Тип B: СТС Kids / СТС Love
-            if mb != base:
                 continue
+        else:
             if ms != suffix:
                 continue
 
@@ -298,13 +295,10 @@ def build(channels_spec, sources_list, out_path="playlist.m3u"):
         # 2) Поиск по base/suffix
         if not found:
             for sidx in priorities:
-                matches = []
-                for e in entries_by_source[sidx]:
-                    if e["meta"]["base"] == ch["base"]:
-                        matches.append(e)
-                    else:
-                        if similar(e["meta"]["title"].lower(), ch["name"].lower()) >= 0.9:
-                            matches.append(e)
+                matches = [
+                    e for e in entries_by_source[sidx]
+                    if e["meta"]["base"] == ch["base"]
+                ]
 
                 matches = filter_matches(ch, matches)
                 matches = sorted(matches, key=lambda x: x["pos"])
@@ -332,8 +326,9 @@ def build(channels_spec, sources_list, out_path="playlist.m3u"):
             else:
                 block = block.replace("#EXTINF:", f'#EXTINF: group-title="{ch["group_override"]}" ', 1)
 
-        # Название
-        block = re.sub(r'(#EXTINF:[^,]*,)(.*)', r'\1' + ch["name"], block)
+        # Название (без скобок)
+        clean_name = re.sub(r"\(.*?\)", "", ch["name"]).strip()
+        block = re.sub(r'(#EXTINF:[^,]*,)(.*)', r'\1' + clean_name, block)
 
         if block not in seen:
             result.append(block)
