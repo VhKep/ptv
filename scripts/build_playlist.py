@@ -334,10 +334,19 @@ def build(channels_spec, sources_list, out_path="playlist.m3u"):
             result.append(block)
             seen.add(block)
 
+    EPG_URLS = (
+        'https://iptvx.one/EPG,'
+        'http://epg.one/epg2.xml.gz,'
+        'https://github.com/matthuisman/i.mjh.nz/raw/master/SamsungTVPlus/us.xml.gz,'
+        'https://str-01.sunset-media.org/epg.xml'
+    )
+
     with open(out_path, "w", encoding="utf-8") as f:
-        f.write("#EXTM3U\n" + "\n\n".join(result) + "\n")
+        f.write(f'#EXTM3U url-tvg="{EPG_URLS}"\n')
+        f.write("\n\n".join(result) + "\n")
 
     return report
+
 
 
 def main():
