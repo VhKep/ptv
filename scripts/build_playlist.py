@@ -359,8 +359,11 @@ def build(channels_spec, sources_list, out_path="playlist.m3u"):
         f.write(new_content)
 
     # -------------------- ЛОГИ --------------------
-    LOG_PATH = "logs/playlist.log"
-    os.makedirs("logs", exist_ok=True)
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    log_dir = os.path.join(base_dir, "..", "logs")
+    os.makedirs(log_dir, exist_ok=True)
+    LOG_PATH = os.path.join(log_dir, "playlist.log")
+
 
     now = datetime.datetime.now()
     timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
