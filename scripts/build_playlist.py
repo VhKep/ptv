@@ -2,6 +2,7 @@
 # coding: utf-8
 
 import re
+import datetime
 import os
 import sys
 import requests
@@ -334,6 +335,7 @@ def build(channels_spec, sources_list, out_path="playlist.m3u"):
             result.append(block)
             seen.add(block)
 
+    # Собираем новый плейлист
     EPG_URLS = (
         'https://iptvx.one/EPG,'
         'http://epg.one/epg2.xml.gz,'
@@ -341,44 +343,46 @@ def build(channels_spec, sources_list, out_path="playlist.m3u"):
         'https://str-01.sunset-media.org/epg.xml'
     )
 
+    new_content = '#EXTM3U url-tvg="' + EPG_URLS + '"\n' + "\n\n".join(result) + "\n"
+
+    # Читаем старый плейлист (если есть)
+    old_content = ""
+    if os.path.exists(out_path):
+        with open(out_path, "r", encoding="utf-8", errors="ignore") as f:
+            old_content = f.read()
+
+    # Определяем, изменился ли плейлист
+    playlist_changed = (new_content != old_content)
+
+    # Перезаписываем файл всегда
     with open(out_path, "w", encoding="utf-8") as f:
-        f.write(f'#EXTM3U url-tvg="{EPG_URLS}"\n')
-        f.write("\n\n".join(result) + "\n")
+        f.write(new_content)
 
     # -------------------- ЛОГИ --------------------
-    import datetime
-    import os
-
     LOG_PATH = "logs/playlist.log"
     os.makedirs("logs", exist_ok=True)
 
     now = datetime.datetime.now()
     timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
 
-    # Проверяем, изменился ли плейлист
-    playlist_changed = "YES" if result else "NO"
-
-    # Формируем запись
     log_entry = [
-        f"[{timestamp}] Build completed",
-        f"Sources used: {priorities}",
-        f"Playlist changed: {playlist_changed}",
+        f"[{timestamp}] GitHub Actions run",
+        f"Playlist path: {out_path}",
         f"Channels processed: {len(specs)}",
-        f"Channels updated: {', '.join([c['name'] for c in specs])}",
-        "-" * 60
+        f"Playlist changed: {'YES' if playlist_changed else 'NO'}",
+        "-" * 60,
     ]
     log_entry = "\n".join(log_entry) + "\n"
 
     # Читаем старый лог
     old_lines = []
     if os.path.exists(LOG_PATH):
-        with open(LOG_PATH, "r", encoding="utf-8") as f:
+        with open(LOG_PATH, "r", encoding="utf-8", errors="ignore") as f:
             old_lines = f.readlines()
 
-    # Фильтруем строки старше 30 дней
-    new_lines = []
+    # Оставляем записи только за последние 30 дней
     cutoff = now - datetime.timedelta(days=30)
-
+    new_lines = []
     for line in old_lines:
         if line.startswith("["):
             try:
@@ -386,7 +390,7 @@ def build(channels_spec, sources_list, out_path="playlist.m3u"):
                 dt = datetime.datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
                 if dt >= cutoff:
                     new_lines.append(line)
-            except:
+            except Exception:
                 new_lines.append(line)
         else:
             new_lines.append(line)
@@ -394,12 +398,11 @@ def build(channels_spec, sources_list, out_path="playlist.m3u"):
     # Добавляем новую запись
     new_lines.append(log_entry)
 
-    # Сохраняем лог
     with open(LOG_PATH, "w", encoding="utf-8") as f:
         f.writelines(new_lines)
 
-    
     return report
+
 
 
 
