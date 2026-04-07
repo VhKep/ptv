@@ -300,27 +300,30 @@ def build(channels_spec, sources_list, out_path="playlist.m3u"):
             else:
                 block = block.replace("#EXTINF:", f'#EXTINF: tvg-id="{ch["desired_tvg"]}" ', 1)
 
-if ch["group_override"]:
-    # Разбираем EXTINF до запятой
-    m = re.match(r'(#EXTINF:[^,]*),(.*)', block, flags=re.DOTALL)
-    if m:
-        extinf = m.group(1)
-        title = m.group(2)
+        # group-title
+        if ch["group_override"]:
+            # Разбираем EXTINF до запятой
+            m = re.match(r'(#EXTINF:[^,]*),(.*)', block, flags=re.DOTALL)
+            if m:
+                extinf = m.group(1)
+                title = m.group(2)
 
-        # Удаляем старый group-title
-        extinf = re.sub(r'group-title=".*?"', '', extinf)
+                # Удаляем старый group-title
+                extinf = re.sub(r'group-title=".*?"', '', extinf)
 
-        # Удаляем двойные пробелы
-        extinf = re.sub(r'\s+', ' ', extinf).strip()
+                # Удаляем двойные пробелы
+                extinf = re.sub(r'\s+', ' ', extinf).strip()
 
-        # Добавляем новый group-title
-        if 'tvg-id=' in extinf or 'tvg-logo=' in extinf:
-            extinf = extinf.replace('#EXTINF:', f'#EXTINF: group-title="{ch["group_override"]}" ')
-        else:
-            extinf = f'#EXTINF: group-title="{ch["group_override"]}" {extinf[len("#EXTINF:"):]}'
+                # Добавляем новый group-title
+                # Вставляем сразу после "#EXTINF:"
+                extinf = extinf.replace(
+                    "#EXTINF:",
+                    f'#EXTINF: group-title="{ch["group_override"]}" ',
+                    1
+                )
 
-        # Собираем обратно
-        block = f"{extinf},{title}"
+                # Собираем обратно
+                block = f"{extinf},{title}"
 
         clean_name = re.sub(r"\(.*?\)", "", ch["name"]).strip()
         block = re.sub(r'(#EXTINF:[^,]*,)(.*)', r'\1' + clean_name, block)
