@@ -345,6 +345,60 @@ def build(channels_spec, sources_list, out_path="playlist.m3u"):
         f.write(f'#EXTM3U url-tvg="{EPG_URLS}"\n')
         f.write("\n\n".join(result) + "\n")
 
+    # -------------------- ЛОГИ --------------------
+    import datetime
+    import os
+
+    LOG_PATH = "logs/playlist.log"
+    os.makedirs("logs", exist_ok=True)
+
+    now = datetime.datetime.now()
+    timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
+
+    # Проверяем, изменился ли плейлист
+    playlist_changed = "YES" if result else "NO"
+
+    # Формируем запись
+    log_entry = [
+        f"[{timestamp}] Build completed",
+        f"Sources used: {priorities}",
+        f"Playlist changed: {playlist_changed}",
+        f"Channels processed: {len(specs)}",
+        f"Channels updated: {', '.join([c['name'] for c in specs])}",
+        "-" * 60
+    ]
+    log_entry = "\n".join(log_entry) + "\n"
+
+    # Читаем старый лог
+    old_lines = []
+    if os.path.exists(LOG_PATH):
+        with open(LOG_PATH, "r", encoding="utf-8") as f:
+            old_lines = f.readlines()
+
+    # Фильтруем строки старше 30 дней
+    new_lines = []
+    cutoff = now - datetime.timedelta(days=30)
+
+    for line in old_lines:
+        if line.startswith("["):
+            try:
+                date_str = line[1:20]
+                dt = datetime.datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+                if dt >= cutoff:
+                    new_lines.append(line)
+            except:
+                new_lines.append(line)
+        else:
+            new_lines.append(line)
+
+    # Добавляем новую запись
+    new_lines.append(log_entry)
+
+    # Сохраняем лог
+    with open(LOG_PATH, "w", encoding="utf-8") as f:
+        f.writelines(new_lines)
+
+    
     return report
 
 
