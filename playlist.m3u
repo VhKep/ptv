@@ -33,7 +33,7 @@ https://mhd128.iptv2022.com/p/jIx4NJYmVjPVhpzaZFQ95g,1775722997/streaming/domash
 http://hls.mirtv.cdnvideo.ru/mirtv-parampublish/mirtv_2500/playlist.m3u8
 
 #EXTINF: group-title="Развлекательные"  tvg-id="sarafan" -1,Сарафан
-http://hls.stb.md/SARAFAN_H264/video.m3u8?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpcCI6IjEwOS4yMDEuMTUyLjE4MSIsIm5iZiI6MTc3NTYzNjczMiwiZXhwIjoxNzc1NzIzMTMyLCJpYXQiOjE3NzU2MzY3MzIsImlzcyI6InN0Yi5zdGFybmV0Lm1kIn0.ht-6Sj_eWPuN9aNXF9jpyhQe7AE7Rvxn9k8fxG5t2cQ
+http://46.53.208.4:80/live/84-req_offset_28000000-req_window_0-1k_v5.m3u8
 
 #EXTINF:-1 tvg-id="zapad-24" tvg-logo="https://iptvx.one/picons/zapad-24.png" group-title="Региональные",Запад 24
 https://vgtrkregion-reg.cdnvideo.ru/vgtrk/kaliningrad/zapad24-hd/index.m3u8
