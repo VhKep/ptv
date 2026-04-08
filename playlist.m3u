@@ -23,14 +23,17 @@ http://tvc-hls.cdnvideo.ru/tvc-res/smil:vd9221_2.smil/playlist.m3u8
 
 #EXTINF: group-title="Развлекательные"  tvg-id="sts" -1 tvg-logo="https://assets-iptv2022.cdnvideo.ru/static/channel/126/logo_256_1655445109.png",СТС HD
 #EXTVLCOPT:http-user-agent=Mozilla/5.0 (SmartTV; Linux; Tizen 6.0)
-https://mhd128.iptv2022.com/p/yY_Zysy3S0J_EUJnDdLu2A,1775674325/streaming/stsott/324/5/tracks-v5a1/mono.m3u8
+https://mhd128.iptv2022.com/p/qYJH9ewxpIKLdVs3rQjQJA,1775722997/streaming/stsott/324/5/tracks-v5a1/mono.m3u8
 
 #EXTINF: group-title="Развлекательные"  tvg-id="domashny" -1 tvg-logo="https://assets-iptv2022.cdnvideo.ru/static/channel/67/logo_256_1655445200.png",Домашний HD
 #EXTVLCOPT:http-user-agent=Mozilla/5.0 (SmartTV; Linux; Tizen 6.0)
-https://mhd128.iptv2022.com/p/XORwxHKKx7uAnwblKO2Rpw,1775674325/streaming/domashiyott/324/5/tracks-v5a1/mono.m3u8
+https://mhd128.iptv2022.com/p/jIx4NJYmVjPVhpzaZFQ95g,1775722997/streaming/domashiyott/324/5/tracks-v5a1/mono.m3u8
 
 #EXTINF:-1 tvg-id="mir" tvg-logo="https://iptvx.one/picons/mir.png" group-title="Общественные" ,Мир
 http://hls.mirtv.cdnvideo.ru/mirtv-parampublish/mirtv_2500/playlist.m3u8
+
+#EXTINF: group-title="Развлекательные"  tvg-id="sarafan" -1,Сарафан
+http://hls.stb.md/SARAFAN_H264/video.m3u8?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpcCI6IjEwOS4yMDEuMTUyLjE4MSIsIm5iZiI6MTc3NTYzNjczMiwiZXhwIjoxNzc1NzIzMTMyLCJpYXQiOjE3NzU2MzY3MzIsImlzcyI6InN0Yi5zdGFybmV0Lm1kIn0.ht-6Sj_eWPuN9aNXF9jpyhQe7AE7Rvxn9k8fxG5t2cQ
 
 #EXTINF:-1 tvg-id="zapad-24" tvg-logo="https://iptvx.one/picons/zapad-24.png" group-title="Региональные",Запад 24
 https://vgtrkregion-reg.cdnvideo.ru/vgtrk/kaliningrad/zapad24-hd/index.m3u8
