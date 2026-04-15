@@ -26,13 +26,13 @@ https://livetv-app.mylifeisgood.net.ru/channels/sts.m3u8
 
 #EXTINF: group-title="Развлекательные"  tvg-id="domashny" -1 tvg-logo="https://assets-iptv2022.cdnvideo.ru/static/channel/67/logo_256_1655445200.png",Домашний HD
 #EXTVLCOPT:http-user-agent=Mozilla/5.0 (SmartTV; Linux; Tizen 6.0)
-https://mhd128.iptv2022.com/p/VKS7cCHVlTJ1w-ZoF1auig,1776235859/streaming/domashiyott/324/5/tracks-v5a1/mono.m3u8
+https://mhd128.iptv2022.com/p/MoSKpueQLr65NGL6TK17hQ,1776279407/streaming/domashiyott/324/5/tracks-v5a1/mono.m3u8
 
 #EXTINF:-1 tvg-id="mir" tvg-logo="https://iptvx.one/picons/mir.png" group-title="Общественные" ,Мир
 http://hls.mirtv.cdnvideo.ru/mirtv-parampublish/mirtv_2500/playlist.m3u8
 
 #EXTINF: group-title="Развлекательные"  tvg-id="sarafan" -1,Сарафан
-http://46.53.208.4:80/live/84-req_offset_28000000-req_window_0-1k_v5.m3u8
+https://stream8.cinerama.uz/1249/tracks-v1a1/mono.m3u8
 
 #EXTINF:-1 tvg-id="zapad-24" tvg-logo="https://iptvx.one/picons/zapad-24.png" group-title="Региональные",Запад 24
 https://vgtrkregion-reg.cdnvideo.ru/vgtrk/kaliningrad/zapad24-hd/index.m3u8
