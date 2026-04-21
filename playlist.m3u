@@ -1,11 +1,8 @@
 #EXTM3U url-tvg="https://iptvx.one/EPG,http://epg.one/epg2.xml.gz,https://github.com/matthuisman/i.mjh.nz/raw/master/SamsungTVPlus/us.xml.gz,https://str-01.sunset-media.org/epg.xml"
-#EXTINF:-1 tvg-id="pervy" tvg-logo="https://iptvx.one/picons/pervy.png" group-title="Общественные" ,Первый канал HD
-https://edge1.1internet.tv/dash-live2/streams/1tv-dvr/1tvdash.mpd
-
 #EXTINF:-1 tvg-id="rossia1" tvg-logo="https://iptvx.one/picons/rossia1.png" group-title="Общественные" ,Россия 1 HD
 https://vgtrkregion-reg.cdnvideo.ru/vgtrk/0/russia1-hd/index.m3u8
 
-#EXTINF:-1 tvg-id="kultura" tvg-logo="https://iptvx.one/picons/kultura.png" group-title="Познавательные",Россия К HD
+#EXTINF:-1 tvg-id="kultura" tvg-logo="https://iptvx.one/picons/kultura.png" group-title="Культура",Россия К HD
 http://vgtrkregion-reg.cdnvideo.ru/vgtrk/4/kultura-hd/index.m3u8
 
 #EXTINF:-1 tvg-id="ntv" tvg-logo="https://iptvx.one/picons/ntv.png" group-title="Общественные" ,НТВ HD
@@ -30,12 +27,12 @@ https://mhd128.iptv2022.com/p/2TpGP5VcFyf08G_KfmvBAg,1776840768/streaming/stsott
 https://mhd128.iptv2022.com/p/0ErAPF8G52qRiKORnMtzbg,1776840768/streaming/domashiyott/324/5/tracks-v5a1/mono.m3u8
 
 #EXTINF:-1 tvg-id="mir" tvg-logo="https://iptvx.one/picons/mir.png" group-title="Общественные" ,Мир
-http://hls.mirtv.cdnvideo.ru/mirtv-parampublish/mirtv_2500/playlist.m3u8
+http://31.131.141.195:8000/play/a003/index.m3u8
 
 #EXTINF: group-title="Развлекательные"  tvg-id="sarafan" -1,Сарафан
 https://stream8.cinerama.uz/1249/tracks-v1a1/mono.m3u8
 
-#EXTINF:-1 tvg-id="zapad-24" tvg-logo="https://iptvx.one/picons/zapad-24.png" group-title="Региональные",Запад 24
+#EXTINF:-1 tvg-id="zapad-24" tvg-logo="https://iptvx.one/picons/zapad-24.png" group-title="Местные" ,Запад 24
 https://vgtrkregion-reg.cdnvideo.ru/vgtrk/kaliningrad/zapad24-hd/index.m3u8
 
 #EXTINF: group-title="На Литовском" -1 tvg-id="delfi-tv",Delfi TV
