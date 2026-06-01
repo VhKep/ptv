@@ -1,7 +1,7 @@
 #EXTM3U url-tvg="https://iptvx.one/EPG,http://epg.one/epg2.xml.gz,https://github.com/matthuisman/i.mjh.nz/raw/master/SamsungTVPlus/us.xml.gz,https://str-01.sunset-media.org/epg.xml"
 #EXTINF: tvg-id="pervy" -1 group-title="Lime (VPN 🇷🇺)" tvg-logo="https://assets-iptv2022.cdnvideo.ru/static/channel/10032/logo_128_1652790001.png",Первый HD
 #EXTVLCOPT:http-user-agent=Mozilla/5.0 (SmartTV; Linux; Tizen 6.0)
-https://mhd128.iptv2022.com/p/Zht9fa8GQDwvUgV_j8trQQ,1780253634/streaming/1kanalott/324/5/tracks-v5a1/mono.m3u8
+https://mhd128.iptv2022.com/p/DKKSvB9efvwb6pym5Yl68Q,1780340152/streaming/1kanalott/324/5/tracks-v5a1/mono.m3u8
 
 #EXTINF:-1 tvg-id="rossia1" tvg-logo="https://iptvx.one/picons/rossia1.png" group-title="Общественные" ,Россия 1 HD
 https://vgtrkregion-reg.cdnvideo.ru/vgtrk/0/russia1-hd/index.m3u8
@@ -27,7 +27,7 @@ http://185.78.112.47:8077/sts_hd/index.m3u8
 
 #EXTINF: group-title="Развлекательные"  tvg-id="domashny" -1 tvg-logo="https://assets-iptv2022.cdnvideo.ru/static/channel/67/logo_256_1655445200.png",Домашний HD
 #EXTVLCOPT:http-user-agent=Mozilla/5.0 (SmartTV; Linux; Tizen 6.0)
-https://mhd128.iptv2022.com/p/psxN_y3zUQqW_vKgSP-6Yg,1780253634/streaming/domashiyott/324/5/tracks-v5a1/mono.m3u8
+https://mhd128.iptv2022.com/p/zBQntdYTCHTW5L41Z2pHTA,1780340152/streaming/domashiyott/324/5/tracks-v5a1/mono.m3u8
 
 #EXTINF:-1 tvg-id="mir" tvg-logo="https://iptvx.one/picons/mir.png" group-title="Общественные" ,Мир
 http://hls.mirtv.cdnvideo.ru/mirtv-parampublish/mirtv_2500/playlist.m3u8
