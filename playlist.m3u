@@ -1,7 +1,7 @@
 #EXTM3U url-tvg="https://iptvx.one/EPG,http://epg.one/epg2.xml.gz,https://github.com/matthuisman/i.mjh.nz/raw/master/SamsungTVPlus/us.xml.gz,https://str-01.sunset-media.org/epg.xml"
 #EXTINF: tvg-id="pervy" -1 group-title="Lime (VPN 🇷🇺)" tvg-logo="https://assets-iptv2022.cdnvideo.ru/static/channel/10032/logo_128_1652790001.png",Первый HD
 #EXTVLCOPT:http-user-agent=Mozilla/5.0 (SmartTV; Linux; Tizen 6.0)
-https://mhd128.iptv2022.com/p/ArYIJ7n3qlEhSnYxJfl4bg,1781765474/streaming/1kanalott/324/5/tracks-v5a1/mono.m3u8
+https://mhd128.iptv2022.com/p/SnTF2sE3_Yq5ciOWsd7RAw,1781808651/streaming/1kanalott/324/5/tracks-v5a1/mono.m3u8
 
 #EXTINF:-1 tvg-id="rossia1" tvg-logo="https://iptvx.one/picons/rossia1.png" group-title="Общественные" ,Россия 1 HD
 https://vgtrkregion-reg.cdnvideo.ru/vgtrk/0/russia1-hd/index.m3u8
@@ -16,26 +16,26 @@ https://cdn.ntv.ru/ntv0/playlist.m3u8
 #EXTVLCOPT:http-user-agent="WINK/1.80.1 (AndroidTV/9) HlsWinkPlayer"
 https://zabava-htlive.cdn.ngenix.net/hls/CH_5TV/variant.m3u8
 
-#EXTINF: tvg-id="otr" -1 group-title="Lime (VPN 🇷🇺)" tvg-logo="http://i121.fastpic.org/big/2023/0520/f9/2ac152d079bd52afa156bfd3a6c71df9.png",ОТР
+#EXTINF: tvg-id="otr" -1 group-title="Lime (VPN 🇷🇺)" tvg-logo="http://i121.fastpic.org/big/2023/0520/9c/cb6d4e14276b76d6d4e052258921a29c.png",ОТР
 #EXTVLCOPT:http-user-agent=Mozilla/5.0 (SmartTV; Linux; Tizen 6.0)
-https://mhd128.iptv2022.com/p/3v1l62Ri_iBCQt3Q25T55w,1781765474/streaming/otrplus6/324/5/tracks-v5a1/mono.m3u8
+https://mhd128.iptv2022.com/p/zfR61EPquzcBWCoXg9pUDg,1781808652/streaming/otrplus2/324/5/tracks-v5a1/mono.m3u8
 
 #EXTINF:-1 tvg-id="tvcentr" tvg-logo="https://iptvx.one/picons/tvcentr.png" group-title="Общественные" ,ТВ центр
 http://tvc-hls.cdnvideo.ru/tvc-res/smil:vd9221_2.smil/playlist.m3u8
 
 #EXTINF: group-title="Развлекательные"  tvg-id="sts" -1 tvg-logo="https://assets-iptv2022.cdnvideo.ru/static/channel/126/logo_256_1655445109.png",СТС HD
 #EXTVLCOPT:http-user-agent=Mozilla/5.0 (SmartTV; Linux; Tizen 6.0)
-https://mhd128.iptv2022.com/p/EBOnG4x-51m4W_azPYf5rg,1781765474/streaming/stsott/324/5/tracks-v5a1/mono.m3u8
+https://mhd128.iptv2022.com/p/RTO552FNrEHLyohT_HoHJQ,1781808651/streaming/stsott/324/5/tracks-v5a1/mono.m3u8
 
 #EXTINF: group-title="Развлекательные"  tvg-id="domashny" -1 tvg-logo="https://assets-iptv2022.cdnvideo.ru/static/channel/67/logo_256_1655445200.png",Домашний HD
 #EXTVLCOPT:http-user-agent=Mozilla/5.0 (SmartTV; Linux; Tizen 6.0)
-https://mhd128.iptv2022.com/p/B7pQOupuXA--3ohkZX4X-w,1781765474/streaming/domashiyott/324/5/tracks-v5a1/mono.m3u8
+https://mhd128.iptv2022.com/p/0kiCKeXd1hLqkEK_2vpvgw,1781808651/streaming/domashiyott/324/5/tracks-v5a1/mono.m3u8
 
 #EXTINF:-1 tvg-id="mir" tvg-logo="https://iptvx.one/picons/mir.png" group-title="Общественные" ,Мир
 http://hls.mirtv.cdnvideo.ru/mirtv-parampublish/mirtv_2500/playlist.m3u8
 
 #EXTINF: group-title="Развлекательные"  tvg-id="sarafan" -1,Сарафан
-https://stream8.cinerama.uz/1249/tracks-v1a1/mono.m3u8
+http://89.218.32.179:18000/play/a03k
 
 #EXTINF:-1 tvg-id="zapad-24" tvg-logo="https://iptvx.one/picons/zapad-24.png" group-title="Местные" ,Запад 24
 https://vgtrkregion-reg.cdnvideo.ru/vgtrk/kaliningrad/zapad24-hd/index.m3u8
