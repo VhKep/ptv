@@ -1,12 +1,16 @@
 #EXTM3U url-tvg="https://iptvx.one/EPG,http://epg.one/epg2.xml.gz,https://github.com/matthuisman/i.mjh.nz/raw/master/SamsungTVPlus/us.xml.gz,https://str-01.sunset-media.org/epg.xml"
+#EXTINF: tvg-id="pervy" -1 group-title="IZONE",Первый HD
+http://46.32.176.50/perviy/index.m3u8
+
 #EXTINF:-1 tvg-id="rossia1" tvg-logo="https://iptvx.one/picons/rossia1.png" group-title="Общественные" ,Россия 1 HD
 https://vgtrkregion-reg.cdnvideo.ru/vgtrk/0/russia1-hd/index.m3u8
 
 #EXTINF:-1 tvg-id="kultura" tvg-logo="https://iptvx.one/picons/kultura.png" group-title="Культура",Россия К HD
 http://vgtrkregion-reg.cdnvideo.ru/vgtrk/4/kultura-hd/index.m3u8
 
-#EXTINF:-1 tvg-id="ntv" tvg-logo="https://iptvx.one/picons/ntv.png" group-title="Общественные" ,НТВ HD
-https://cdn.ntv.ru/ntv0/playlist.m3u8
+#EXTINF: tvg-id="ntv" -1 group-title="Rutube (VPN)",НТВ HD
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+https://bl.rutube.ru/livestream/c37cd74192c6bc3d6cd6077c0c4fd686/index.m3u8?s=LAMgIc2Tqc2gMPyRP4F9nA&e=2082240612&scheme=https
 
 #EXTINF:-1 tvg-id="5kanal-ru" tvg-logo="https://iptvx.one/picons/5kanal-ru.png" group-title="Общественные" ,Пятый канал
 #EXTVLCOPT:http-user-agent="WINK/1.80.1 (AndroidTV/9) HlsWinkPlayer"
@@ -18,17 +22,18 @@ http://api.peers.tv/timeshift/otvrus/16/playlist.m3u8?token=eyJhbGciOiJIUzI1NiIs
 #EXTINF:-1 tvg-id="tvcentr" tvg-logo="https://iptvx.one/picons/tvcentr.png" group-title="Общественные" ,ТВ центр
 http://tvc-hls.cdnvideo.ru/tvc-res/smil:vd9221_2.smil/playlist.m3u8
 
-#EXTINF: group-title="Развлекательные"  tvg-id="sts" -1,СТС HD
+#EXTINF: group-title="Развлекательные"  tvg-id="sts" -1,СТС
 http://127.0.0.1:6878/ace/getstream?id=5e06a45d6939341fb7427189245380086c1d63c7
 
-#EXTINF: group-title="Развлекательные"  tvg-id="domashny" -1,Домашний HD
-http://127.0.0.1:6878/ace/getstream?id=66e2f44bd0a7687a61f5cc4f03bcfc20a505057c
+#EXTINF: group-title="Развлекательные" -1 tvg-id="domashny" tvg-logo="https://iptvx.one/picons/domashny.png",Домашний
+#EXTVLCOPT:http-user-agent="WINK/1.80.1 (AndroidTV/9) HlsWinkPlayer"
+https://zabava-htlive.cdn.ngenix.net/hls/CH_DOMASHNIY/variant.m3u8
 
 #EXTINF:-1 tvg-id="mir" tvg-logo="https://iptvx.one/picons/mir.png" group-title="Общественные" ,Мир
 http://hls.mirtv.cdnvideo.ru/mirtv-parampublish/mirtv_2500/playlist.m3u8
 
 #EXTINF: group-title="Развлекательные"  tvg-id="sarafan" -1,Сарафан
-http://89.218.32.179:18000/play/a03k
+https://stream8.cinerama.uz/1249/tracks-v1a1/mono.m3u8
 
 #EXTINF:-1 tvg-id="zapad-24" tvg-logo="https://iptvx.one/picons/zapad-24.png" group-title="Местные" ,Запад 24
 https://vgtrkregion-reg.cdnvideo.ru/vgtrk/kaliningrad/zapad24-hd/index.m3u8
