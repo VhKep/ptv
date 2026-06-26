@@ -10,14 +10,14 @@ http://vgtrkregion-reg.cdnvideo.ru/vgtrk/4/kultura-hd/index.m3u8
 
 #EXTINF: tvg-id="ntv" -1 group-title="Rutube (VPN)",НТВ HD
 #EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
-https://bl.rutube.ru/livestream/c37cd74192c6bc3d6cd6077c0c4fd686/index.m3u8?s=oraGvnsQI8X282ONv7IF6A&e=2082414156&scheme=https
+https://bl.rutube.ru/livestream/c37cd74192c6bc3d6cd6077c0c4fd686/index.m3u8?s=zpUzS7_eqDoRJ0GYZsxv9w&e=2082500271&scheme=https
 
 #EXTINF:-1 tvg-id="5kanal-ru" tvg-logo="https://iptvx.one/picons/5kanal-ru.png" group-title="Общественные" ,Пятый канал
 #EXTVLCOPT:http-user-agent="WINK/1.80.1 (AndroidTV/9) HlsWinkPlayer"
 https://zabava-htlive.cdn.ngenix.net/hls/CH_5TV/variant.m3u8
 
 #EXTINF: tvg-id="otr" -1 catchup="append" catchup-days="7" catchup-source="&offset=${offset}" group-title="Peers (VPN)" ,ОТР
-http://api.peers.tv/timeshift/otvrus/16/playlist.m3u8?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhY2Nlc3MiLCJleHAiOjE3ODI1MDA1MDIsImlhdCI6MTc4MjQxNDEwMiwiY2lkIjo2LCJ1aWQiOjEwNTkwNjg5MzUsInJlZyI6ZmFsc2UsImlwIjo3NjEyNTI4NjAsImFkdWx0IjpmYWxzZX0.1L2wYKwLNLcb9n_ov6wpq5uB4yvpZXOxL2sf_x5nayE&offset=10
+http://api.peers.tv/timeshift/otvrus/16/playlist.m3u8?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhY2Nlc3MiLCJleHAiOjE3ODI1ODY2MjIsImlhdCI6MTc4MjUwMDIyMiwiY2lkIjo2LCJ1aWQiOjEwNTk0MzEyNTIsInJlZyI6ZmFsc2UsImlwIjo3NjEyNTI4NjAsImFkdWx0IjpmYWxzZX0.2aIB5heP5Gs9FGYxVNC9y5ajL75FPvTKl12-vmKeBfE&offset=10
 
 #EXTINF:-1 tvg-id="tvcentr" tvg-logo="https://iptvx.one/picons/tvcentr.png" group-title="Общественные" ,ТВ центр
 http://tvc-hls.cdnvideo.ru/tvc-res/smil:vd9221_2.smil/playlist.m3u8
@@ -34,7 +34,7 @@ https://zabava-htlive.cdn.ngenix.net/hls/CH_DOMASHNIY/variant.m3u8
 http://hls.mirtv.cdnvideo.ru/mirtv-parampublish/mirtv_2500/playlist.m3u8
 
 #EXTINF: group-title="Развлекательные"  tvg-id="sarafan" -1,Сарафан
-https://stream8.cinerama.uz/1249/tracks-v1a1/mono.m3u8
+http://tv.ttk.mx:9044
 
 #EXTINF:-1 tvg-id="zapad-24" tvg-logo="https://iptvx.one/picons/zapad-24.png" group-title="Местные" ,Запад 24
 https://vgtrkregion-reg.cdnvideo.ru/vgtrk/kaliningrad/zapad24-hd/index.m3u8
