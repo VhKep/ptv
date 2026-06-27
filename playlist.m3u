@@ -16,7 +16,7 @@ https://bl.rutube.ru/livestream/c37cd74192c6bc3d6cd6077c0c4fd686/index.m3u8?s=GX
 http://46.32.64.39:10005
 
 #EXTINF: tvg-id="otr" -1 catchup="append" catchup-days="7" catchup-source="&offset=${offset}" group-title="Peers (VPN)" ,ОТР
-http://api.peers.tv/timeshift/otvrus/16/playlist.m3u8?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhY2Nlc3MiLCJleHAiOjE3ODI2MzAyMzAsImlhdCI6MTc4MjU0MzgzMCwiY2lkIjo2LCJ1aWQiOjEwNTk2MDY4ODIsInJlZyI6ZmFsc2UsImlwIjozMjYwNTA5MTY3LCJhZHVsdCI6ZmFsc2V9.hgbZbbvAIaMfxmWxH3EBP8o6womBi6rsZFcC0PpZzEI&offset=10
+http://api.peers.tv/timeshift/otvrus/126/playlist.m3u8?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhY2Nlc3MiLCJleHAiOjE3ODI2MzAyMzAsImlhdCI6MTc4MjU0MzgzMCwiY2lkIjo2LCJ1aWQiOjEwNTk2MDY4ODIsInJlZyI6ZmFsc2UsImlwIjozMjYwNTA5MTY3LCJhZHVsdCI6ZmFsc2V9.hgbZbbvAIaMfxmWxH3EBP8o6womBi6rsZFcC0PpZzEI&offset=10
 
 #EXTINF:-1 tvg-id="tvcentr" tvg-logo="https://iptvx.one/picons/tvcentr.png" group-title="Общественные" ,ТВ центр
 http://tvc-hls.cdnvideo.ru/tvc-res/smil:vd9221_2.smil/playlist.m3u8
