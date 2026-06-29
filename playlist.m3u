@@ -10,14 +10,14 @@ http://vgtrkregion-reg.cdnvideo.ru/vgtrk/4/kultura-hd/index.m3u8
 
 #EXTINF: tvg-id="ntv" -1 group-title="Rutube (VPN)",НТВ HD
 #EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
-https://bl.rutube.ru/livestream/c37cd74192c6bc3d6cd6077c0c4fd686/index.m3u8?s=mCf7Q0CIwFiDDNo_mF5U3Q&e=2082717394&scheme=https
+https://bl.rutube.ru/livestream/c37cd74192c6bc3d6cd6077c0c4fd686/index.m3u8?s=TXIldCjUNmXUe6g9ek4PQw&e=2082759080&scheme=https
 
 #EXTINF:-1 tvg-id="5kanal-ru" tvg-logo="https://iptvx.one/picons/5kanal-ru.png" group-title="Общественные" ,Пятый канал
 http://46.32.64.39:10005
 
 #EXTINF: tvg-id="otr" -1 group-title="Lime (VPN 🇷🇺)" tvg-logo="https://mbmh5s36ok.a.trbcdn.net/572aecd6-static/channel/101/logo_256.webp",ОТР
 #EXTVLCOPT:http-user-agent={"platform":"android","app":"limehd.ru.ctvshka","version_name":"4.0.0","version_code":"329","sdk":"29","name":"Xiaomi+Redmi+Note+7","device_id":"a079721a79f4dbe8","is_huawei":"0"}
-https://mhd116.iptv2022.com/x/pXJfsOdWS0-rQTd4T01qFA,1782803747/streaming/otr/324/5/index.m3u8
+https://mhd116.iptv2022.com/x/ZT8mY_msog1wojsTyrK-0A,1782845431/streaming/otr/324/5/index.m3u8
 
 #EXTINF:-1 tvg-id="tvcentr" tvg-logo="https://iptvx.one/picons/tvcentr.png" group-title="Общественные" ,ТВ центр
 http://tvc-hls.cdnvideo.ru/tvc-res/smil:vd9221_2.smil/playlist.m3u8
@@ -32,7 +32,7 @@ https://zabava-htlive.cdn.ngenix.net/hls/CH_DOMASHNIY/variant.m3u8
 http://hls.mirtv.cdnvideo.ru/mirtv-parampublish/mirtv_2500/playlist.m3u8
 
 #EXTINF: group-title="Развлекательные"  tvg-id="sarafan" -1 catchup="append" catchup-days="7" catchup-source="&offset=${offset}",Сарафан
-http://api.peers.tv/timeshift/sarafan/16/playlist.m3u8?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhY2Nlc3MiLCJleHAiOjE3ODI4MDM3NDgsImlhdCI6MTc4MjcxNzM0OCwiY2lkIjo2LCJ1aWQiOjEwNjA1NTMyNjAsInJlZyI6ZmFsc2UsImlwIjo3NjEyNTI4NjAsImFkdWx0IjpmYWxzZX0.Lk51JrD1VaJPH77BENZviQFkUfkpZQHfOJ2LuzDRdjk&offset=10
+http://api.peers.tv/timeshift/sarafan/16/playlist.m3u8?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhY2Nlc3MiLCJleHAiOjE3ODI4NDU0MzIsImlhdCI6MTc4Mjc1OTAzMiwiY2lkIjo2LCJ1aWQiOjEwNjA4MDg4OTAsInJlZyI6ZmFsc2UsImlwIjo3NjEyNTI4NjAsImFkdWx0IjpmYWxzZX0.t4oXRB_iIIyMycIe5MuCvlPJvDGBdIwp3F5HhMeul90&offset=10
 
 #EXTINF: group-title="На Литовском" -1 tvg-id="delfi-tv",Delfi TV
 https://s1.dcdn.lt/live/televizija/playlist.m3u8
