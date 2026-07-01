@@ -12,8 +12,8 @@ http://vgtrkregion-reg.cdnvideo.ru/vgtrk/4/kultura-hd/index.m3u8
 #EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
 https://bl.rutube.ru/livestream/c37cd74192c6bc3d6cd6077c0c4fd686/index.m3u8?s=tokD-_qGsh9YzLHJSsbLhg&e=2082889286&scheme=https
 
-#EXTINF:-1 tvg-id="5kanal-ru" tvg-logo="https://iptvx.one/picons/5kanal-ru.png" group-title="Общественные" ,Пятый канал
-http://46.32.64.39:10005
+#EXTINF: tvg-id="5kanal-ru" -1 group-title="ДЖИЭНСИ-АЛЬФА (VPN)",Пятый канал
+http://37.186.70.39:40/play/37/index.m3u8
 
 #EXTINF: tvg-id="otr" -1 group-title="Lime (VPN 🇷🇺)" tvg-logo="https://mbmh5s36ok.a.trbcdn.net/572aecd6-static/channel/101/logo_256.webp",ОТР
 #EXTVLCOPT:http-user-agent={"platform":"android","app":"limehd.ru.ctvshka","version_name":"4.0.0","version_code":"329","sdk":"29","name":"Xiaomi+Redmi+Note+7","device_id":"a079721a79f4dbe8","is_huawei":"0"}
@@ -24,6 +24,9 @@ http://tvc-hls.cdnvideo.ru/tvc-res/smil:vd9221_2.smil/playlist.m3u8
 
 #EXTINF: group-title="Развлекательные" -1 tvg-id="sts" tvg-logo="https://iptvx.one/picons/sts.png",СТС
 https://zabava-htlive.cdn.ngenix.net/hls/CH_STS/variant.m3u8
+
+#EXTINF: group-title="Развлекательные" -1 tvg-id="domashny" tvg-logo="https://iptvx.one/picons/domashny.png",Домашний
+https://zabava-htlive.cdn.ngenix.net/hls/CH_DOMASHNIY/variant.m3u8
 
 #EXTINF:-1 tvg-id="mir" tvg-logo="https://iptvx.one/picons/mir.png" group-title="Общественные" ,Мир
 http://hls.mirtv.cdnvideo.ru/mirtv-parampublish/mirtv_2500/playlist.m3u8
