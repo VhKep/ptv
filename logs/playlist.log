@@ -931,7 +931,6 @@ Playlist path: playlist.m3u
 Channels processed: 16
 Playlist changed: YES
 ------------------------------------------------------------
-[2026-06-02 15:53:15] GitHub Actions run
 Playlist path: playlist.m3u
 Channels processed: 16
 Playlist changed: NO
@@ -1575,4 +1574,9 @@ Playlist changed: YES
 Playlist path: playlist.m3u
 Channels processed: 16
 Playlist changed: NO
+------------------------------------------------------------
+[2026-07-02 19:04:50] GitHub Actions run
+Playlist path: playlist.m3u
+Channels processed: 16
+Playlist changed: YES
 ------------------------------------------------------------
